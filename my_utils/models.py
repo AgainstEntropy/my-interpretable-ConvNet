@@ -56,7 +56,7 @@ class my_ConvNeXt(nn.Module):
         head_init_scale (float): Init scaling value for classifier weights and biases. Default: 1.
     """
 
-    def __init__(self, in_chans=1, num_classes=5,
+    def __init__(self, in_chans=1, num_classes=4,
                  depths=[1, 1, 1], dims=[8, 16, 32], drop_path_rate=0.,
                  layer_scale_init_value=1e-2, head_init_scale=1.,
                  ):
