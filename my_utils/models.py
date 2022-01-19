@@ -6,7 +6,7 @@
 import torch
 from torch import nn
 import torch.nn.functional as F
-from timm.models.layers import trunc_normal_, DropPath
+# from timm.models.layers import trunc_normal_, DropPath
 
 
 class Block(nn.Module):
@@ -17,7 +17,7 @@ class Block(nn.Module):
 
     def __init__(self, dim, drop_path=0., layer_scale_init_value=1e-6):
         super().__init__()
-        self.dwconv = nn.Conv2d(dim, dim, kernel_size=3, padding=1, groups=dim)  # depthwise conv
+        self.dwconv = nn.Conv2d(dim, dim, kernel_size=3, padding=1, groups=dim, bias=False)  # depthwise conv
         # self.norm = LayerNorm(dim, eps=1e-6)
         self.norm = nn.BatchNorm2d(dim, eps=1e-6)
         self.pwconv1 = nn.Linear(dim, 2 * dim)  # pointwise/1x1 convs, implemented with linear layers
@@ -118,7 +118,8 @@ class my_ConvNeXt(nn.Module):
         if isinstance(m, (nn.Conv2d, nn.Linear)):
             # trunc_normal_(m.weight, std=.02)
             nn.init.kaiming_normal_(m.weight)
-            nn.init.constant_(m.bias, 0)
+            if m.bias is not None:
+                nn.init.constant_(m.bias, 0)
 
     def forward_features(self, x):
         x = x.permute(0, 2, 3, 1)  # (N, C, H, W) -> (N, H, W, C)
