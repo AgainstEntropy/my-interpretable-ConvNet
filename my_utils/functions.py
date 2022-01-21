@@ -23,7 +23,7 @@ def Conv_BN_Relu(in_channel, out_channel, kernel_size=(3, 3), stride=None):
     )
 
 
-def save_model(model, optimizer, acc=00):
+def save_model(model, model_type, optimizer, acc=00):
     model_paras = model.state_dict()
     print("Model parameters:")
     for k, v in model_paras.items():
@@ -35,7 +35,7 @@ def save_model(model, optimizer, acc=00):
         print(f"{k}")
 
     save_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
-    save_path = f"saved_models/{acc}_polygen_myconvnext_{save_time}.pt"
+    save_path = f"saved_models/{acc}_polygen_{model_type}_{save_time}.pt"
     torch.save({
         "model_paras": model_paras,
         "optim_paras": optim_paras

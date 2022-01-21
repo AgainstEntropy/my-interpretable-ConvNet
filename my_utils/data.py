@@ -13,7 +13,7 @@ from torchvision.io import read_image
 class MyDataset(Dataset):
     def __init__(self, ROOT, transform=None, target_transform=None):
         self.data = []
-        for idx, path in enumerate(os.listdir(ROOT)):
+        for idx, path in enumerate(sorted(os.listdir(ROOT))):
             class_path = os.path.join(ROOT, path)
             class_files = [os.path.join(class_path, file) for file in os.listdir(class_path)]
             self.data.extend(list(zip(class_files, [idx] * len(class_files))))
