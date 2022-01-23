@@ -6,6 +6,8 @@
 import torch
 from torch import nn
 import torch.nn.functional as F
+
+
 # from timm.models.layers import trunc_normal_, DropPath
 
 
@@ -121,19 +123,26 @@ class my_ConvNeXt(nn.Module):
             if m.bias is not None:
                 nn.init.constant_(m.bias, 0)
 
-    def forward_features(self, x):
+    def forward_connection(self, x, block_idx=0):
         x = x.permute(0, 2, 3, 1)  # (N, C, H, W) -> (N, H, W, C)
-        x = self.connection_layers[0](x)  # (N, H, W, C[i]) -> (N, H, W, C[i+1])
-        x = x.permute(0, 3, 1, 2)  # (N, H, W, C) -> (N, C, H, W)
+        x = self.connection_layers[block_idx](x)  # (N, H, W, C[i]) -> (N, H, W, C[i+1])
+        return x.permute(0, 3, 1, 2)  # (N, H, W, C) -> (N, C, H, W)
+
+    def forward_1st_block(self, x):
+        x = self.forward_connection(x)
         x = self.norm_layers[0](x)
-        x = self.stages[0](x)
-        for i in range(1, self.num_layers):
+        return self.stages[0](x)
+
+    def forward_block(self, x, block_idx):
+        x = self.norm_layers[block_idx](x)
+        x = self.forward_connection(x, block_idx)
+        return self.stages[block_idx](x)
+
+    def forward_features(self, x):
+        x = self.forward_1st_block(x)
+        for block_idx in range(1, self.num_layers):
             # x = self.downsample_layers[i](x)
-            x = self.norm_layers[i](x)
-            x = x.permute(0, 2, 3, 1)  # (N, C, H, W) -> (N, H, W, C)
-            x = self.connection_layers[i](x)  # (N, H, W, C[i]) -> (N, H, W, C[i+1])
-            x = x.permute(0, 3, 1, 2)  # (N, H, W, C) -> (N, C, H, W)
-            x = self.stages[i](x)
+            x = self.forward_block(x, block_idx)
         return self.norm(x.mean([-2, -1]))  # global average pooling, (N, C, H, W) -> (N, C)
 
     def forward(self, x):
@@ -143,7 +152,7 @@ class my_ConvNeXt(nn.Module):
 
 
 class simple_Conv(nn.Module):
-    def __init__(self, in_channel=1, num_classes=5):
+    def __init__(self, in_channel=1, num_classes=4):
         super(simple_Conv, self).__init__()
 
         self.conv_layer1 = nn.Sequential(
