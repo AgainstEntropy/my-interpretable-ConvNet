@@ -152,11 +152,20 @@ class my_ConvNeXt(nn.Module):
 
 
 class simple_Conv(nn.Module):
-    def __init__(self, in_channel=1, num_classes=4):
-        super(simple_Conv, self).__init__()
+    def __init__(self, in_chans=1, num_classes=4,
+                 depths=[1, 1, 1], dims=[1, 1, 1]):
+        super().__init__()
+
+        self.blocks = nn.ModuleList()
+        # TODO: complete simple_conv
+        start = nn.Linear(in_chans, dims[0])
+        self.connection_layers.append(start)
+        for i in range(self.num_layers - 1):
+            pw_layer = nn.Linear(dims[i], dims[i + 1])
+            self.connection_layers.append(pw_layer)
 
         self.conv_layer1 = nn.Sequential(
-            nn.Conv2d(in_channel, 16, 3, padding='same', bias=False),
+            nn.Conv2d(in_chans, 16, 3, padding='same', bias=False),
             nn.BatchNorm2d(16),
             nn.ReLU()
         )
