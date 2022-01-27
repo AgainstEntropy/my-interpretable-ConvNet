@@ -51,7 +51,7 @@ def get_device(model):
     return device
 
 
-def check_accuracy(test_model, loader):
+def check_accuracy(test_model, loader, training=True):
     num_correct = 0
     num_samples = 0
     device = get_device(test_model)
@@ -65,11 +65,14 @@ def check_accuracy(test_model, loader):
             num_correct += (scores.argmax(axis=1) == Y).sum()
             num_samples += len(scores)
     test_acc = float(num_correct) / num_samples
-    print(f"Test accuracy is : {100. * test_acc:.2f}%\tInfer time: {time.time() - tic}")
+    if training:
+        return test_acc
+    else:
+        print(f"Test accuracy is : {100. * test_acc:.2f}%\tInfer time: {time.time() - tic}")
 
 
-def train(model, optimizer, scheduler, loss_fn, train_loader, writer,
-          check_fn, check_loaders, batch_step, epochs=2, log_every=10):
+def train(model, optimizer, scheduler, loss_fn, train_loader,
+          check_fn, check_loaders, batch_step, epochs=2, log_every=10, writer=None):
     device = get_device(model)
     batch_size = train_loader.batch_size
     check_loader_train = check_loaders['train']
@@ -84,8 +87,9 @@ def train(model, optimizer, scheduler, loss_fn, train_loader, writer,
             Y = Y.to(device, dtype=torch.int64)
             scores = model(X)
             loss = loss_fn(scores, Y)
-            writer.add_scalar('loss', loss.item(), batch_step)
-            writer.add_scalar('lr', optimizer.param_groups[0]['lr'], batch_step)
+            if writer is not None:
+                writer.add_scalar('loss', loss.item(), batch_step)
+                writer.add_scalar('lr', optimizer.param_groups[0]['lr'], batch_step)
 
             # back propagate
             optimizer.zero_grad()
@@ -96,13 +100,14 @@ def train(model, optimizer, scheduler, loss_fn, train_loader, writer,
             # check accuracy
             if batch_idx % log_every == 0:
                 model.eval()
-                train_acc = check_fn(model, check_loader_train)
-                val_acc = check_fn(model, check_loader_val)
-                writer.add_scalars('acc', {'train':train_acc, 'val':val_acc}, batch_step)
+                train_acc = check_fn(model, check_loader_train, training=True)
+                val_acc = check_fn(model, check_loader_val, training=True)
+                if writer is not None:
+                    writer.add_scalars('acc', {'train': train_acc, 'val': val_acc}, batch_step)
                 print('Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.5f}\tVal acc: {:.1f}%'.format(
                     epoch, batch_idx * batch_size, len(train_loader.dataset),
-                           100. * batch_idx / len(train_loader),
-                           loss, 100. * val_acc))
+                    100. * batch_idx / len(train_loader),
+                    loss, 100. * val_acc))
 
         print('====> Epoch: {}\tTime: {}s'.format(epoch, time.time() - tic))
 

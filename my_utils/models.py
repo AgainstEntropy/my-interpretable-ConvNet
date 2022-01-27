@@ -51,15 +51,15 @@ class my_ConvNeXt(nn.Module):
     Args:
         in_chans (int): Number of input image channels. Default: 1
         num_classes (int): Number of classes for classification head. Default: 5
-        depths (tuple(int)): Number of blocks at each stage. Default: [1, 1, 1, 1]
-        dims (int): Feature dimension at each stage. Default: [8, 16, 32]
+        depths (tuple(int)): Number of blocks at each stage. Default: (1, 1, 1, 1)
+        dims (int): Feature dimension at each stage. Default: (8, 16, 32)
         drop_path_rate (float): Stochastic depth rate. Default: 0.
         layer_scale_init_value (float): Init value for Layer Scale. Default: 1e-6.
         head_init_scale (float): Init scaling value for classifier weights and biases. Default: 1.
     """
 
     def __init__(self, in_chans=1, num_classes=4,
-                 depths=[1, 1, 1], dims=[8, 16, 32], drop_path_rate=0.,
+                 depths=(1, 1, 1), dims=(8, 16, 32), drop_path_rate=0.,
                  layer_scale_init_value=1e-2, head_init_scale=1.,
                  ):
         super().__init__()
@@ -152,41 +152,66 @@ class my_ConvNeXt(nn.Module):
 
 
 class simple_Conv(nn.Module):
+    r"""
+    Args:
+        in_chans (int): Number of input image channels. Default: 1
+        num_classes (int): Number of classes for classification head. Default: 4
+        depths (tuple(int)): Number of blocks at each stage. Default: (1, 1, 1)
+        dims (tuple(int)): Feature dimension at each stage. Default: (1, 1, 1)
+    """
     def __init__(self, in_chans=1, num_classes=4,
-                 depths=[1, 1, 1], dims=[1, 1, 1]):
+                 depths=(1, 1, 1), dims=(8, 16, 32)):
         super().__init__()
 
-        self.blocks = nn.ModuleList()
-        # TODO: complete simple_conv
-        start = nn.Linear(in_chans, dims[0])
-        self.connection_layers.append(start)
-        for i in range(self.num_layers - 1):
-            pw_layer = nn.Linear(dims[i], dims[i + 1])
-            self.connection_layers.append(pw_layer)
+        assert len(depths) == len(dims)
+        self.num_layers = len(dims)
 
-        self.conv_layer1 = nn.Sequential(
-            nn.Conv2d(in_chans, 16, 3, padding='same', bias=False),
-            nn.BatchNorm2d(16),
-            nn.ReLU()
+        self.stages = nn.ModuleList()
+        start_layer = self.conv_block(in_chans, dims[0], act='relu')
+        self.stages.append(start_layer)
+
+        for i in range(self.num_layers - 1):
+            stage = nn.Sequential(
+                *[self.conv_block(dims[i], dims[i]) for _ in range(depths[i] - 1)]
+            )
+            self.stages.append(stage)
+            self.stages.append(self.conv_block(dims[i], dims[i + 1], act='relu'))
+
+        self.head = nn.Linear(dims[-1], num_classes)
+
+        self.apply(self._init_weights)
+
+    def _init_weights(self, m):
+        if isinstance(m, (nn.Conv2d, nn.Linear)):
+            # trunc_normal_(m.weight, std=.02)
+            nn.init.kaiming_normal_(m.weight)
+            if m.bias is not None:
+                nn.init.constant_(m.bias, 0)
+
+    def conv_block(self, in_chans, out_chans, kernel_size=3, act=None):
+        r"""
+        Args:
+            in_chans (int): Number of input image channels.
+            out_chans (int): Number of output image channels.
+            kernel_size (int): Kernel size of Conv layer. Default: 3
+            act (str): Activation function. Select from 'relu' or 'gelu'. Default: None
+        """
+        block = nn.Sequential(
+            nn.Conv2d(in_chans, out_chans, kernel_size, padding=1, bias=False),
+            nn.BatchNorm2d(out_chans),
         )
-        self.conv_layer2 = nn.Sequential(
-            nn.Conv2d(16, 16, 3, padding='same', bias=False),
-            nn.BatchNorm2d(16),
-            nn.ReLU()
-        )
-        self.conv_layer3 = nn.Sequential(
-            nn.Conv2d(16, 32, 3, padding='same', bias=False),
-            nn.BatchNorm2d(32),
-            nn.ReLU()
-        )
-        self.head = nn.Linear(32, num_classes)
+        if act is not None:
+            if act == 'relu':
+                block.add_module(f'relu-{out_chans}', nn.ReLU())
+            elif act == 'gelu':
+                block.add_module(f'gelu-{out_chans}', nn.GELU())
+        return block
 
     def forward(self, x):
-        x1 = self.conv_layer1(x)
-        x2 = self.conv_layer2(x1)
-        x3 = self.conv_layer3(x2)
-        x4 = x3.mean([-2, -1])  # global average pooling, (N, C, H, W) -> (N, C)
-        scores = self.head(x4)
+        for stage in self.stages:
+            x = stage(x)  # (N, C[i], H, W) -> (N, C[i+1], H, W)
+        x = x.mean([-2, -1])  # global average pooling, (N, C, H, W) -> (N, C)
+        scores = self.head(x)
 
         return scores
 
