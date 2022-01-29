@@ -52,7 +52,7 @@ class my_ConvNeXt(nn.Module):
         in_chans (int): Number of input image channels. Default: 1
         num_classes (int): Number of classes for classification head. Default: 5
         depths (tuple(int)): Number of blocks at each stage. Default: (1, 1, 1, 1)
-        dims (int): Feature dimension at each stage. Default: (8, 16, 32)
+        dims (tuple(int)): Feature dimension at each stage. Default: (8, 16, 32)
         drop_path_rate (float): Stochastic depth rate. Default: 0.
         layer_scale_init_value (float): Init value for Layer Scale. Default: 1e-6.
         head_init_scale (float): Init scaling value for classifier weights and biases. Default: 1.
@@ -60,8 +60,7 @@ class my_ConvNeXt(nn.Module):
 
     def __init__(self, in_chans=1, num_classes=4,
                  depths=(1, 1, 1), dims=(8, 16, 32), drop_path_rate=0.,
-                 layer_scale_init_value=1e-2, head_init_scale=1.,
-                 ):
+                 layer_scale_init_value=1e-2, head_init_scale=1.):
         super().__init__()
 
         self.num_layers = len(dims)
@@ -151,6 +150,33 @@ class my_ConvNeXt(nn.Module):
         return x
 
 
+class my_ConvNeXt_vis(my_ConvNeXt):
+    def __init__(self):
+        my_ConvNeXt.__init__(self, in_chans=1, num_classes=4,
+                             depths=(1, 1, 1), dims=(8, 16, 32), drop_path_rate=0.,
+                             layer_scale_init_value=1e-2, head_init_scale=1.)
+        self.mid_outputs = None
+
+    def forward_features(self, x):
+        x = self.forward_1st_block(x)
+        self.mid_outputs.append(x.detach().cpu())
+        for block_idx in range(1, self.num_layers):
+            # x = self.downsample_layers[i](x)
+            x = self.forward_block(x, block_idx)
+            self.mid_outputs.append(x.detach().cpu())
+
+        x = x.mean([-2, -1])  # global average pooling, (N, C, H, W) -> (N, C)
+        return self.norm(x) if x.size(0) > 1 else x
+
+    def forward(self, x):
+        # save some median outputs when inferring
+        self.mid_outputs = []
+
+        x = self.forward_features(x)
+        x = self.head(x)
+        return x, self.mid_outputs
+
+
 class simple_Conv(nn.Module):
     r"""
     Args:
@@ -159,6 +185,7 @@ class simple_Conv(nn.Module):
         depths (tuple(int)): Number of blocks at each stage. Default: (1, 1, 1)
         dims (tuple(int)): Feature dimension at each stage. Default: (1, 1, 1)
     """
+
     def __init__(self, in_chans=1, num_classes=4,
                  depths=(1, 1, 1), dims=(8, 16, 32)):
         super().__init__()

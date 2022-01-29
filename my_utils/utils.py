@@ -23,7 +23,7 @@ def Conv_BN_Relu(in_channel, out_channel, kernel_size=(3, 3), stride=None):
     )
 
 
-def save_model(model, model_type, optimizer, acc=00):
+def save_model(model, optimizer, model_type, acc=00):
     model_paras = model.state_dict()
     print("Model parameters:")
     for k, v in model_paras.items():
@@ -51,7 +51,7 @@ def get_device(model):
     return device
 
 
-def check_accuracy(test_model, loader, training=True):
+def check_accuracy(test_model, loader, training=False):
     num_correct = 0
     num_samples = 0
     device = get_device(test_model)
@@ -73,6 +73,17 @@ def check_accuracy(test_model, loader, training=True):
 
 def train(model, optimizer, scheduler, loss_fn, train_loader,
           check_fn, check_loaders, batch_step, epochs=2, log_every=10, writer=None):
+    """
+
+    Args:
+        batch_step (int):
+        epochs (int):
+        log_every (int):
+        writer :
+
+    Returns:
+        batch_step (int):
+    """
     device = get_device(model)
     batch_size = train_loader.batch_size
     check_loader_train = check_loaders['train']
