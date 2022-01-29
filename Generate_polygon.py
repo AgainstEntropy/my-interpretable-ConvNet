@@ -4,10 +4,12 @@
 # @File    : Generate_polygon.py
 
 import os
+import argparse
+import random
+
 import numpy as np
 import cv2
-import random
-import matplotlib.pyplot as plt
+from tqdm import tqdm
 
 
 def angles(n, rr):
@@ -39,25 +41,38 @@ def draw_polygon(point_list, fill=False, width=32):
     return img
 
 
+parser = argparse.ArgumentParser()
+parser.add_argument('-ds', '--dataset', type=str, required=True, default='train',
+                    help="the dataset you want to generate.")
+parser.add_argument('-f', '--fill', default=False,
+                    help="whether or not to fill the polygons.")
+parser.add_argument('-fn', '--figNum', type=int, default=10000,
+                    help="the number of pictures to generate.")
+parser.add_argument('-w', '--width', type=int, default=32,
+                    help="the width of figure to generate.")
+parser.add_argument('-an', '--angNums', type=list, default=list(range(3, 7)),
+                    help="how many angles to be contained in one figure, so as the species of polygons.")
+args = parser.parse_args()
+
 if __name__ == '__main__':
-    fill = True
-    dataset = 'train'
-    picNum = 10000
-    angNums = range(2, 7)
-    width = 32
+    fill = args.fill
+    dataset = args.dataset
+    figNum = args.figNum
+    angNums = args.angNums
+    width = args.width
     if fill:
-        ROOT = 'Datasets/polygons_filled_32/'
+        ROOT = f'Datasets/polygons_filled_{width}/'
     else:
-        ROOT = 'Datasets/polygons_unfilled_32/'
+        ROOT = f'Datasets/polygons_unfilled_{width}/'
     ROOT += dataset
-    for angNum in angNums:
+    for angNum in tqdm(angNums):
         Path = os.path.join(ROOT, f'{angNum}')
         if not os.path.isdir(Path):
             os.makedirs(Path)
-        for j in range(picNum):
+        for j in tqdm(range(figNum)):
             random.seed()
-            point_list = points(n=angNum, width=width, r=13)
-            img = draw_polygon(point_list, fill)
+            point_list = points(angNum, width, r=width * 0.4)
+            img = draw_polygon(point_list, fill, width)
             img_address = os.path.join(Path, f"{angNum}_{j}.png")
             cv2.imwrite(img_address, img)
 
