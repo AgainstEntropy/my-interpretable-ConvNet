@@ -52,7 +52,7 @@ def vis_act(act, label, row_num=6):
     fig = plt.figure()
     for i in range(subfig_num):
         plt.subplot(row_num, col_num, i + 1)
-        plt.title(f"GT:{label}")
+        plt.title(f"GT:{label} ({i}/{subfig_num - 1})")
         plt.imshow(act[i], 'gray')
         plt.axis('off')
     plt.tight_layout()

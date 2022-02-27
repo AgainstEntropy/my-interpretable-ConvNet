@@ -1,2 +1,5 @@
 /Datasets/
-/Datasets.zip
+*.zip
+
+# sprcial files
+/test.ipynb
