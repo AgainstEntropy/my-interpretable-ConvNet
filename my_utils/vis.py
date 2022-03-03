@@ -9,6 +9,10 @@ import torch
 
 from .utils import get_device
 
+from pytorch_grad_cam import GradCAM
+from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
+from pytorch_grad_cam.utils.image import show_cam_on_image
+
 
 def grid_vis(loader, row_num, model=None):
     imgs, labels = next(iter(loader))
@@ -17,7 +21,7 @@ def grid_vis(loader, row_num, model=None):
         scores = model(imgs.to(device))
         preds = scores.argmax(axis=1)
 
-    vis = imgs.permute(0, 2, 3, 1)
+    vis = imgs.permute(0, 2, 3, 1)  # (N, C, H, W) -> (N, H, W, C)
     batch_size = vis.size(0)
     if row_num ** 2 < batch_size:
         subfig_num = row_num ** 2
@@ -56,3 +60,45 @@ def vis_act(act, label, row_num=6):
         plt.imshow(act[i], 'gray')
         plt.axis('off')
     plt.tight_layout()
+
+
+def Vis_cam(loader, model, target_layers, img_num=8):
+    """
+
+    Args:
+        loader ():
+        model ():
+        target_layers ():
+        img_num ():
+
+    Returns:
+
+    """
+    device = get_device(model)
+    imgs, labels = next(iter(loader))
+    input_tensors = imgs[:img_num].to(device)
+    labels = labels[:img_num]
+
+    model.eval()
+    scores = model(input_tensors)
+    preds = scores.argmax(axis=1)
+
+    vis = imgs.permute(0, 2, 3, 1)  # (N, C, H, W) -> (N, H, W, C)
+    col_num = img_num
+    row_num = 5
+
+    fig = plt.figure(figsize=(2 * img_num, 10))
+    for col in range(col_num):
+        input_tensor = input_tensors[[col]]
+        plt.subplot(row_num, col_num, col + 1)
+        plt.imshow(vis[col], "gray")
+        plt.title(f"GT:{labels[col]}, pred:{preds[col]}")
+        plt.axis("off")
+        for row in range(1, 5):
+            targets = [ClassifierOutputTarget(row - 1)]
+            with GradCAM(model=model, target_layers=target_layers, use_cuda=True) as cam:
+                grayscale_cam = cam(input_tensor=input_tensor, targets=targets)[0, :]
+            vis_cam = show_cam_on_image(vis[col].numpy() / 255, grayscale_cam, use_rgb=True)
+            plt.subplot(row_num, col_num, row * col_num + col + 1)
+            plt.imshow(vis_cam, "gray")
+            plt.axis("off")

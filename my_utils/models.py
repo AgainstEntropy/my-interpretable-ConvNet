@@ -142,7 +142,9 @@ class my_ConvNeXt(nn.Module):
         for block_idx in range(1, self.num_layers):
             # x = self.downsample_layers[i](x)
             x = self.forward_block(x, block_idx)
-        return self.norm(x.mean([-2, -1]))  # global average pooling, (N, C, H, W) -> (N, C)
+
+        x = x.mean([-2, -1])  # global average pooling, (N, C, H, W) -> (N, C)
+        return self.norm(x) if x.size(0) > 1 else x
 
     def forward(self, x):
         x = self.forward_features(x)
