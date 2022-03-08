@@ -1,5 +1,6 @@
 /Datasets/
 *.zip
+.idea/
 
 # sprcial files
 /test_cam.ipynb
