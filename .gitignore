@@ -1,4 +1,5 @@
-/Datasets/
+# project dirs and datasets
+Datasets/
 *.zip
 .idea/
 
