@@ -52,14 +52,14 @@ class my_ConvNeXt(nn.Module):
         in_chans (int): Number of input image channels. Default: 1
         num_classes (int): Number of classes for classification head. Default: 5
         depths (tuple(int)): Number of blocks at each stage. Default: (1, 1, 1, 1)
-        dims (tuple(int)): Feature dimension at each stage. Default: (8, 16, 32)
+        dims (tuple(int)): Feature dimension at each stage. Default: (4, 8, 16)
         drop_path_rate (float): Stochastic depth rate. Default: 0.
         layer_scale_init_value (float): Init value for Layer Scale. Default: 1e-6.
         head_init_scale (float): Init scaling value for classifier weights and biases. Default: 1.
     """
 
     def __init__(self, in_chans=1, num_classes=4,
-                 depths=(1, 1, 1), dims=(8, 16, 32), drop_path_rate=0.,
+                 depths=(1, 1, 1), dims=(4, 8, 16), drop_path_rate=0.,
                  layer_scale_init_value=1e-2, head_init_scale=1.):
         super().__init__()
 

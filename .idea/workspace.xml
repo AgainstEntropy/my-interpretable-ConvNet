@@ -4,10 +4,16 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="580800dd-0704-442b-84fc-70e4e6e2cdce" name="Changes" comment="add deployment config">
-      <change beforePath="$PROJECT_DIR$/.idea/deployment.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/deployment.xml" afterDir="false" />
+    <list default="true" id="580800dd-0704-442b-84fc-70e4e6e2cdce" name="Changes" comment="some test for dataset normalization.">
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/my-interpretable-ConvNeXt.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/my-interpretable-ConvNeXt.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/my_utils/data.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_utils/data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my_utils/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_utils/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my_utils/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_utils/utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my_utils/vis.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_utils/vis.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/polygen_classify_cam.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/polygen_classify_cam.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/polygon_classify_train.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/polygon_classify_train.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/polygon_classify_vis.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/polygon_classify_vis.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/test.ipynb" afterDir="false" />
     </list>
@@ -49,7 +55,7 @@
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
-    <property name="settings.editor.selected.configurable" value="terminal" />
+    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
@@ -61,7 +67,7 @@
       <updated>1646029260673</updated>
       <workItem from="1646029261768" duration="6005000" />
       <workItem from="1646718369791" duration="2975000" />
-      <workItem from="1646721664695" duration="5044000" />
+      <workItem from="1646721664695" duration="14002000" />
     </task>
     <task id="LOCAL-00001" summary="check cuda and cudnn version">
       <created>1646034019501</created>
@@ -91,7 +97,14 @@
       <option name="project" value="LOCAL" />
       <updated>1646723652759</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="some test for dataset normalization.">
+      <created>1646730736866</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1646730736866</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -113,6 +126,7 @@
     <MESSAGE value="update .gitignore" />
     <MESSAGE value="add thickness and seed for args." />
     <MESSAGE value="add deployment config" />
-    <option name="LAST_COMMIT_MESSAGE" value="add deployment config" />
+    <MESSAGE value="some test for dataset normalization." />
+    <option name="LAST_COMMIT_MESSAGE" value="some test for dataset normalization." />
   </component>
 </project>

@@ -34,7 +34,7 @@ def save_model(model, optimizer, model_type, acc=00):
         print(f"{k}")
 
     save_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
-    save_path = f"saved_models/{acc}_polygen_{model_type}_{save_time}.pt"
+    save_path = f"saved_models/{acc}_{model_type}_{save_time}.pt"
     torch.save({
         "model_paras": model_paras,
         "optim_paras": optim_paras

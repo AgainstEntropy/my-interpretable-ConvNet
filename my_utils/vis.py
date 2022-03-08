@@ -44,6 +44,16 @@ def grid_vis(loader, row_num, model=None):
 
 
 def vis_act(act, label, row_num=6):
+    """
+
+    Args:
+        act ():
+        label ():
+        row_num ():
+
+    Returns:
+
+    """
     act = act.permute(1, 2, 3, 0)  # (1, C, H, W) -> (C, H, W, 1)
     chans_num = act.size(0)
     if row_num ** 2 < chans_num:
@@ -62,10 +72,11 @@ def vis_act(act, label, row_num=6):
     plt.tight_layout()
 
 
-def Vis_cam(loader, model, target_layers, img_num=8):
+def Vis_cam(loader, model, target_layers, img_num=8, mode="cam_only"):
     """
 
     Args:
+        mode ():
         loader ():
         model ():
         target_layers ():
@@ -97,8 +108,10 @@ def Vis_cam(loader, model, target_layers, img_num=8):
         for row in range(1, 5):
             targets = [ClassifierOutputTarget(row - 1)]
             with GradCAM(model=model, target_layers=target_layers, use_cuda=True) as cam:
-                grayscale_cam = cam(input_tensor=input_tensor, targets=targets)[0, :]
-            vis_cam = show_cam_on_image(vis[col].numpy() / 255, grayscale_cam, use_rgb=True)
+                img_cam = cam(input_tensor=input_tensor, targets=targets)[0, :]
+            if mode == "cam_on_img":
+                img_cam = show_cam_on_image(vis[col].numpy() / 255, img_cam, use_rgb=True)
             plt.subplot(row_num, col_num, row * col_num + col + 1)
-            plt.imshow(vis_cam, "gray")
+            # By default, a linear scaling mapping the lowest value to 0 and the highest to 1 is used in plt.imshow()
+            plt.imshow(img_cam, "gray")
             plt.axis("off")
