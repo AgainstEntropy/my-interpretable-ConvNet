@@ -22,7 +22,7 @@ class MyDataset(Dataset):
 
     def __getitem__(self, index):
         img_dir, label = self.data[index]
-        img = read_image(img_dir).numpy().transpose((1, 2, 0))
+        img = read_image(img_dir)  # (C, H, W)
 
         if self.transform is not None:
             img = self.transform(img)
