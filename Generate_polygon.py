@@ -31,12 +31,12 @@ def points(n, width=32, r=13):
     return np.array(point_list, dtype=int)
 
 
-def draw_polygon(point_list, fill=False, width=32):
+def draw_polygon(point_list, fill=False, width=32, thickness=1):
     img = np.zeros((width, width))
     if fill:
         cv2.fillPoly(img, [point_list], color=255)
     else:
-        cv2.polylines(img, [point_list], isClosed=True, color=255, thickness=1)
+        cv2.polylines(img, [point_list], isClosed=True, color=255, thickness=thickness)
 
     return img
 
@@ -44,26 +44,31 @@ def draw_polygon(point_list, fill=False, width=32):
 parser = argparse.ArgumentParser()
 parser.add_argument('-ds', '--dataset', type=str, required=True, default='train',
                     help="the dataset you want to generate.")
-parser.add_argument('-f', '--fill', default=False,
-                    help="whether or not to fill the polygons.")
 parser.add_argument('-fn', '--figNum', type=int, default=10000,
                     help="the number of pictures to generate.")
+parser.add_argument('-f', '--fill', default=False,
+                    help="whether or not to fill the polygons.")
 parser.add_argument('-w', '--width', type=int, default=32,
                     help="the width of figure to generate.")
+parser.add_argument('-th', '--thickness', type=int, default=1,
+                    help="thickness of polygon line.")
 parser.add_argument('-an', '--angNums', type=list, default=list(range(3, 7)),
                     help="how many angles to be contained in one figure, so as the species of polygons.")
+parser.add_argument('-s', '--seed', type=int, default=1026,
+                    help="random seed for generating polygons. Default: 1026.")
 args = parser.parse_args()
 
 if __name__ == '__main__':
     fill = args.fill
+    thickness = args.thickness
     dataset = args.dataset
     figNum = args.figNum
     angNums = args.angNums
     width = args.width
     if fill:
-        ROOT = f'Datasets/polygons_filled_{width}/'
+        ROOT = f'Datasets/polygons_filled_{width}_{thickness}/'
     else:
-        ROOT = f'Datasets/polygons_unfilled_{width}/'
+        ROOT = f'Datasets/polygons_unfilled_{width}_{thickness}/'
     ROOT += dataset
     for angNum in tqdm(angNums):
         Path = os.path.join(ROOT, f'{angNum}')
@@ -72,7 +77,7 @@ if __name__ == '__main__':
         for j in tqdm(range(figNum)):
             random.seed()
             point_list = points(angNum, width, r=width * 0.4)
-            img = draw_polygon(point_list, fill, width)
+            img = draw_polygon(point_list, fill, width, thickness)
             img_address = os.path.join(Path, f"{angNum}_{j}.png")
             cv2.imwrite(img_address, img)
 
