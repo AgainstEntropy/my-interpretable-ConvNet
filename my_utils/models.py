@@ -185,11 +185,11 @@ class simple_Conv(nn.Module):
         in_chans (int): Number of input image channels. Default: 1
         num_classes (int): Number of classes for classification head. Default: 4
         depths (tuple(int)): Number of blocks at each stage. Default: (1, 1, 1)
-        dims (tuple(int)): Feature dimension at each stage. Default: (1, 1, 1)
+        dims (tuple(int)): Feature dimension at each stage. Default: (4, 8, 16)
     """
 
     def __init__(self, in_chans=1, num_classes=4,
-                 depths=(1, 1, 1), dims=(8, 16, 32)):
+                 depths=(1, 1, 1), dims=(4, 8, 16)):
         super().__init__()
 
         assert len(depths) == len(dims)

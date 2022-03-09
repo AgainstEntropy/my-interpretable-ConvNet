@@ -43,11 +43,7 @@ def save_model(model, optimizer, model_type, acc=00):
 
 
 def get_device(model):
-    if next(model.parameters()).device.type == 'cuda':
-        device = torch.device('cuda')
-    else:
-        device = torch.device('cpu')
-    return device
+    return next(model.parameters()).device
 
 
 def check_accuracy(test_model, loader, training=False):
@@ -84,7 +80,7 @@ def train(model, optimizer, scheduler, loss_fn, train_loader,
         batch_step (int):
     """
     device = get_device(model)
-    batch_size = train_loader.batch_size
+    # batch_size = train_loader.batch_size
     check_loader_train = check_loaders['train']
     check_loader_val = check_loaders['val']
     iters = len(train_loader)
@@ -98,8 +94,8 @@ def train(model, optimizer, scheduler, loss_fn, train_loader,
             scores = model(X)
             loss = loss_fn(scores, Y)
             if writer is not None:
-                writer.add_scalar('loss', loss.item(), batch_step)
-                writer.add_scalar('lr', optimizer.param_groups[0]['lr'], batch_step)
+                writer.add_scalar('Metric/loss', loss.item(), batch_step)
+                writer.add_scalar('Hpara/lr', optimizer.param_groups[0]['lr'], batch_step)
 
             # back propagate
             optimizer.zero_grad()
@@ -113,12 +109,10 @@ def train(model, optimizer, scheduler, loss_fn, train_loader,
                 train_acc = check_fn(model, check_loader_train, training=True)
                 val_acc = check_fn(model, check_loader_val, training=True)
                 if writer is not None:
-                    writer.add_scalars('acc', {'train': train_acc, 'val': val_acc}, batch_step)
-                print('Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.5f}\tVal acc: {:.1f}%'.format(
-                    epoch, batch_idx * batch_size, len(train_loader.dataset),
-                    100. * batch_idx / len(train_loader),
-                    loss, 100. * val_acc))
+                    writer.add_scalars('Metric/acc', {'train': train_acc, 'val': val_acc}, batch_step)
+                print(f'Epoch: {epoch} [{batch_idx}/{iters}]\tLoss: {loss:.4f}\t'
+                      f'Val acc: {100. * val_acc:.1f}%')
 
-        print('====> Epoch: {}\tTime: {}s'.format(epoch, time.time() - tic))
+        print(f'====> Epoch: {epoch}\tTime: {time.time() - tic}s')
 
     return batch_step
