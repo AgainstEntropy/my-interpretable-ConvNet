@@ -3,9 +3,10 @@
 # @Author  : WangYihao
 # @File    : vis.py
 
+import torch
+import cv2
 import matplotlib.pyplot as plt
 import numpy as np
-import torch
 
 from .utils import get_device
 
@@ -72,7 +73,7 @@ def vis_act(act, label, row_num=6):
     plt.tight_layout()
 
 
-def Vis_cam(loader, model, target_layers, img_num=8, mode="cam_only"):
+def Vis_cam(loader, model, target_layers, img_num=8, mode="heatmap_only"):
     """
 
     Args:
@@ -109,7 +110,9 @@ def Vis_cam(loader, model, target_layers, img_num=8, mode="cam_only"):
             targets = [ClassifierOutputTarget(row - 1)]
             with GradCAM(model=model, target_layers=target_layers, use_cuda=True) as cam:
                 img_cam = cam(input_tensor=input_tensor, targets=targets)[0, :]
-            if mode == "cam_on_img":
+            if mode == "heatmap_only":
+                img_cam = cv2.applyColorMap(np.uint8(255 * img_cam), colormap=cv2.COLORMAP_JET)
+            elif mode == "heatmap_on_img":
                 img_cam = show_cam_on_image(vis[col].numpy() / 255, img_cam, use_rgb=True)
             plt.subplot(row_num, col_num, row * col_num + col + 1)
             # By default, a linear scaling mapping the lowest value to 0 and the highest to 1 is used in plt.imshow()

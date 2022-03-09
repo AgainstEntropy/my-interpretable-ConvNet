@@ -155,7 +155,7 @@ class my_ConvNeXt(nn.Module):
 class my_ConvNeXt_vis(my_ConvNeXt):
     def __init__(self):
         my_ConvNeXt.__init__(self, in_chans=1, num_classes=4,
-                             depths=(1, 1, 1), dims=(8, 16, 32), drop_path_rate=0.,
+                             depths=(1, 1, 1), dims=(4, 8, 16), drop_path_rate=0.,
                              layer_scale_init_value=1e-2, head_init_scale=1.)
         self.mid_outputs = None
 
