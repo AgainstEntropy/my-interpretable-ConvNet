@@ -1,23 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" autoUpload="Always" serverName="wangyh@49.234.47.191:22 password" remoteFilesAllowedToDisappearOnAutoupload="false">
+  <component name="PublishConfigData" autoUpload="Always" serverName="wangyh@49.234.47.191:22" remoteFilesAllowedToDisappearOnAutoupload="false">
     <serverData>
       <paths name="wangyh@49.234.47.191:22">
         <serverdata>
           <mappings>
             <mapping deploy="/01-Projects/03-my" local="$PROJECT_DIR$" web="/" />
           </mappings>
-        </serverdata>
-      </paths>
-      <paths name="wangyh@49.234.47.191:22 password">
-        <serverdata>
-          <mappings>
-            <mapping deploy="/01-Projects/03-my" local="$PROJECT_DIR$" />
-          </mappings>
           <excludedPaths>
-            <excludedPath local="true" path="$PROJECT_DIR$/Datasets" />
             <excludedPath path="/01-Projects/03-my/Datasets" />
           </excludedPaths>
+        </serverdata>
+      </paths>
+      <paths name="wangyh@49.234.47.191:22 (1)">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/01-Projects/03-my" local="$PROJECT_DIR$" web="/" />
+          </mappings>
         </serverdata>
       </paths>
     </serverData>
