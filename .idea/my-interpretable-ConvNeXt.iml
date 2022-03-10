@@ -5,7 +5,7 @@
       <excludeFolder url="file://$MODULE_DIR$/Datasets" />
       <excludeFolder url="file://$MODULE_DIR$/tblogs" />
     </content>
-    <orderEntry type="jdk" jdkName="Remote my" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Remote Python 3.9.7 (sftp://wangyh@49.234.47.191:22/home/wangyh/anaconda3/envs/my/bin/python)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="PackageRequirementsSettings">
