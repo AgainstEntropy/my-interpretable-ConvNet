@@ -94,7 +94,7 @@ def train(model, optimizer, scheduler, loss_fn, train_loader,
     Args:
         batch_step (int):
         epochs (int):
-        log_every (int):
+        log_every (int): log info per log_every batches.
         writer :
 
     Returns:
@@ -112,6 +112,7 @@ def train(model, optimizer, scheduler, loss_fn, train_loader,
             model.train()
             X = X.to(device, dtype=torch.float32)
             Y = Y.to(device, dtype=torch.int64)
+            # print(X.device, model.device)
             scores = model(X)
             loss = loss_fn(scores, Y)
             if writer is not None:
