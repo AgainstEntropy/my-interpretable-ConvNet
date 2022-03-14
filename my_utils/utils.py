@@ -2,12 +2,16 @@
 # @Date    : 2021/12/18 19:39
 # @Author  : WangYihao
 # @File    : functions.py
-
-
-import torch
-from torch import nn
-
+import os
 import time
+
+import adabound
+import torch
+from torch import nn, optim
+from torch.utils.tensorboard import SummaryWriter
+from torchvision import transforms
+
+import models, data
 
 
 def Conv_BN_Relu(in_channel, out_channel, kernel_size=(3, 3), stride=None):
@@ -39,28 +43,25 @@ def sim(imgs_act, img):
     sims = torch.zeros(chans)
     for chan, act in enumerate(imgs_act):
         sims[chan] = (act * img).sum() / \
-                  torch.sqrt(torch.sum(act ** 2) * torch.sum(img ** 2))
+                     torch.sqrt(torch.sum(act ** 2) * torch.sum(img ** 2))
     return torch.softmax(sims, dim=0)
 
 
-def save_model(model, optimizer, model_type, dataset="unfilled", acc=00):
+def save_model(model, optimizer, scheduler_main, scheduler_decay, model_type, save_dir, acc=00):
     model_paras = model.state_dict()
-    print("Model parameters:")
-    for k, v in model_paras.items():
-        print(f"{k}:\t {v.size()}")
-
     optim_paras = optimizer.state_dict()
-    print("\nOptimizer parameters:")
-    for k, v in optim_paras.items():
-        print(f"{k}")
+    scheduler_main_paras = scheduler_main.state_dict()
+    scheduler_decay_paras = scheduler_decay.state_dict()
 
     save_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
-    save_path = f"saved_models/{acc}_{dataset}_{model_type}_{save_time}.pt"
+    save_path = os.path.join(save_dir, f'{acc}_{model_type}_{save_time}.pt')
     torch.save({
         "model_paras": model_paras,
-        "optim_paras": optim_paras
+        "optim_paras": optim_paras,
+        "scheduler_paras": (scheduler_main_paras, scheduler_decay_paras)
     }, save_path)
-    print(f"\nSuccessfully saved to {save_path}")
+
+    print(f"\nSuccessfully saved model, optimizer and scheduler to {save_path}")
 
 
 def get_device(model):
@@ -87,8 +88,8 @@ def check_accuracy(test_model, loader, training=False):
         print(f"Test accuracy is : {100. * test_acc:.2f}%\tInfer time: {time.time() - tic}")
 
 
-def train(model, optimizer, scheduler, loss_fn, train_loader,
-          check_fn, check_loaders, batch_step, epochs=2, log_every=10, writer=None):
+def trainer(model, optimizer, scheduler_mian, scheduler_decay, loss_fn, train_loader,
+            check_fn, check_loaders, batch_step, epochs=2, log_every=10, writer=None):
     """
 
     Args:
@@ -123,7 +124,8 @@ def train(model, optimizer, scheduler, loss_fn, train_loader,
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            scheduler.step(batch_step / iters)
+            if scheduler_mian is not None:
+                scheduler_mian.step(batch_step / iters)
 
             # check accuracy
             if batch_idx % log_every == 0:
@@ -135,6 +137,104 @@ def train(model, optimizer, scheduler, loss_fn, train_loader,
                 print(f'Epoch: {epoch} [{batch_idx}/{iters}]\tLoss: {loss:.4f}\t'
                       f'Val acc: {100. * val_acc:.1f}%')
 
+        # lr decay
+        scheduler_decay.step()
         print(f'====> Epoch: {epoch}\tTime: {time.time() - tic}s')
 
     return batch_step
+
+
+def train_a_model(model_type='simple_conv', optim_type='Adam', schedule_type='cosine',
+                  configs=None, loader_kwargs=None):
+    if configs is None:
+        configs = {
+            'dataset_dir': '/home/wangyh/01-Projects/03-my/Datasets/polygons_unfilled_32_2',
+            'batch_size': 256,
+            'device': 'cuda:7',
+            'lr': 1e-4,
+            'cos_T': 10,
+            'momentum': 0.9,
+            'weight_decay': 0.05,
+        }
+    # make dataset
+    fig_resize = 32
+    mean, std = torch.tensor(0.2036), torch.tensor(0.4027)
+    T = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Resize((fig_resize, fig_resize)),
+        transforms.Normalize(mean, std)
+    ])
+    if loader_kwargs is None:
+        loader_kwargs = {
+            'batch_size': configs['batch_size'],  # default:1
+            'shuffle': True,  # default:False
+            'num_workers': 4,  # default:0
+            'pin_memory': True,  # default:False
+            'drop_last': True,  # default:False
+            'prefetch_factor': 4,  # default:2
+            'persistent_workers': False  # default:False
+        }
+    train_loader, test_loader, check_loaders = data.make_datasets(
+        dataset_dir=configs['dataset_dir'],
+        loader_kwargs=loader_kwargs,
+        transform=T
+    )
+
+    model, optimizer, scheduler_main, scheduler_decay = [None] * 4
+    # define model
+    if model_type == 'simple_conv':
+        model = models.simple_Conv()
+    elif model_type == 'my_convnext':
+        model = models.my_ConvNeXt()
+    model = model.to(configs['device'])
+
+    # define optimizer
+    if optim_type == 'Adam':
+        optimizer = optim.Adam(model.parameters(),
+                               lr=configs['lr'],
+                               weight_decay=configs['weight_decay'])
+    elif optim_type == 'AdaBound':
+        optimizer = adabound.AdaBound(model.parameters(),
+                                      lr=configs['lr'],
+                                      weight_decay=configs['weight_decay'],
+                                      final_lr=0.1)
+    elif optim_type == 'SGD':
+        optimizer = optim.SGD(model.parameters(),
+                              lr=configs['lr'],
+                              weight_decay=configs['weight_decay'],
+                              momentum=configs['momentum'])
+
+    # define lr scheduler
+    if schedule_type == 'cosine_warm':
+        scheduler_main = optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=5, T_mult=2)
+    elif schedule_type == 'cosine':
+        scheduler_main = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=configs['cos_T'],
+                                                              last_epoch=configs['cos_T'])
+    scheduler_decay = optim.lr_scheduler.StepLR(optimizer, step_size=2 * configs['cos_T'], gamma=0.8)
+    loss_func = nn.CrossEntropyLoss()
+    print(f"model ({model_type}) is on {next(model.parameters()).device}")
+
+    # tensorboard writer
+    log_dir = os.path.join(os.getcwd(),
+                           f"tblogs/BS_{configs['batch_size']}_OP_{optim_type}_LR_{configs['lr']}")
+    writer = SummaryWriter(log_dir=log_dir)
+    with open(os.path.join(log_dir, 'para.txt'), mode='w') as f:
+        # f.write('# basic paras\n')
+        f.write(f'model_type :\t{model_type}\n\n')
+        f.write('## -- dataset configs -- ##')
+        for k, v in loader_kwargs.items():
+            f.write(f'{k} :\t{v}\n')
+        f.write('## -- train configs -- ##')
+        f.write(f'optim_type :\t{optim_type}\n')
+        f.write(f'schedule_type :\t{schedule_type}\n')
+        for k, v in configs.items():
+            f.write(f'{k} :\t{v}\n')
+
+    trainer(model, optimizer, None, loss_func, train_loader,
+            check_fn=check_accuracy,
+            check_loaders=check_loaders,
+            batch_step=0, epochs=50, log_every=30, writer=writer)
+
+    final_acc = check_accuracy(model, test_loader, True)
+    save_model(model, optimizer, scheduler_main, scheduler_decay,
+               model_type, log_dir, acc=int(final_acc))
