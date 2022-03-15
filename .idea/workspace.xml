@@ -4,13 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="580800dd-0704-442b-84fc-70e4e6e2cdce" name="Changes" comment="using simple conv">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/my-interpretable-ConvNeXt.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/my-interpretable-ConvNeXt.iml" afterDir="false" />
+    <list default="true" id="580800dd-0704-442b-84fc-70e4e6e2cdce" name="Changes" comment="add a function to train a model from zero">
+      <change afterPath="$PROJECT_DIR$/grid_search.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/my_utils/data.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_utils/data.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/my_utils/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_utils/utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/polygen_classify_cam.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/polygen_classify_cam.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/polygon_classify_train.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/polygon_classify_train.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/polygon_classify_vis.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/polygon_classify_vis.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/test.ipynb" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -22,6 +22,7 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Jupyter Notebook" />
+        <option value="Python Script" />
       </list>
     </option>
   </component>
@@ -46,7 +47,7 @@
     <property name="WebServerToolWindowPanel.toolwindow.show.permissions" value="false" />
     <property name="WebServerToolWindowPanel.toolwindow.show.size" value="false" />
     <property name="credentialsType com.jetbrains.python.remote.PyCreateRemoteInterpreterDialog$PyCreateRemoteSdkForm" value="Web Deployment" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../03-NeTF" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../阶段汇报" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
@@ -66,6 +67,8 @@
       <workItem from="1646721664695" duration="14349000" />
       <workItem from="1646792288447" duration="6989000" />
       <workItem from="1646803925161" duration="6568000" />
+      <workItem from="1647268629157" duration="4935000" />
+      <workItem from="1647310718136" duration="6689000" />
     </task>
     <task id="LOCAL-00001" summary="check cuda and cudnn version">
       <created>1646034019501</created>
@@ -102,7 +105,14 @@
       <option name="project" value="LOCAL" />
       <updated>1646730736866</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="add a function to train a model from zero">
+      <created>1647268596592</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1647268596592</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -125,6 +135,7 @@
     <MESSAGE value="add thickness and seed for args." />
     <MESSAGE value="add deployment config" />
     <MESSAGE value="some test for dataset normalization." />
-    <option name="LAST_COMMIT_MESSAGE" value="some test for dataset normalization." />
+    <MESSAGE value="add a function to train a model from zero" />
+    <option name="LAST_COMMIT_MESSAGE" value="add a function to train a model from zero" />
   </component>
 </project>
