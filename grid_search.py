@@ -4,8 +4,8 @@
 # @File    : grid search.py
 from my_utils.utils import train_a_model
 
-for lr in [2e-4, 1e-4, 8e-5, 5e-5, 3e-5, 2e-5]:
-    for batch_size in [64, 128, 256, 512]:
+for lr in [2e-4, 1.5e-4, 1e-4]:
+    for batch_size in [128, 256, 512]:
         for weight_decay in [0.05, 0.1, 0.15]:
             print(f'\n---- lr: {lr}, bs: {batch_size}, wd: {weight_decay} ----')
             train_config = {

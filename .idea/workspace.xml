@@ -4,13 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="580800dd-0704-442b-84fc-70e4e6e2cdce" name="Changes" comment="add a function to train a model from zero">
-      <change afterPath="$PROJECT_DIR$/grid_search.py" afterDir="false" />
+    <list default="true" id="580800dd-0704-442b-84fc-70e4e6e2cdce" name="Changes" comment="pca">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/my_utils/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_utils/utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/polygen_classify_cam.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/polygen_classify_cam.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/polygon_classify_train.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/polygon_classify_train.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/polygon_classify_vis.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/polygon_classify_vis.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Generate_polygon.py" beforeDir="false" afterPath="$PROJECT_DIR$/Generate_polygon.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/grid_search.py" beforeDir="false" afterPath="$PROJECT_DIR$/grid_search.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my_utils/vis.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_utils/vis.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/test.ipynb" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -68,7 +66,9 @@
       <workItem from="1646792288447" duration="6989000" />
       <workItem from="1646803925161" duration="6568000" />
       <workItem from="1647268629157" duration="4935000" />
-      <workItem from="1647310718136" duration="6689000" />
+      <workItem from="1647310718136" duration="9883000" />
+      <workItem from="1647331625522" duration="667000" />
+      <workItem from="1647347353495" duration="5433000" />
     </task>
     <task id="LOCAL-00001" summary="check cuda and cudnn version">
       <created>1646034019501</created>
@@ -112,7 +112,21 @@
       <option name="project" value="LOCAL" />
       <updated>1647268596592</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="grid search">
+      <created>1647319493814</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1647319493814</updated>
+    </task>
+    <task id="LOCAL-00008" summary="pca">
+      <created>1647319501713</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1647319501713</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -136,6 +150,8 @@
     <MESSAGE value="add deployment config" />
     <MESSAGE value="some test for dataset normalization." />
     <MESSAGE value="add a function to train a model from zero" />
-    <option name="LAST_COMMIT_MESSAGE" value="add a function to train a model from zero" />
+    <MESSAGE value="grid search" />
+    <MESSAGE value="pca" />
+    <option name="LAST_COMMIT_MESSAGE" value="pca" />
   </component>
 </project>

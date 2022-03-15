@@ -2,12 +2,16 @@
 # @Date    : 2022/1/23 14:05
 # @Author  : WangYihao
 # @File    : vis.py
+import os.path
 
 import torch
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
+from torch.utils.data import DataLoader
+from torchvision import transforms
 
+from . import data
 from .utils import get_device
 
 from pytorch_grad_cam import GradCAM
@@ -118,3 +122,21 @@ def Vis_cam(loader, model, target_layers, img_num=8, mode="heatmap_only"):
             # By default, a linear scaling mapping the lowest value to 0 and the highest to 1 is used in plt.imshow()
             plt.imshow(img_cam, "gray")
             plt.axis("off")
+
+
+def Vis_mean(dataset_dir='/home/wangyh/01-Projects/03-my/Datasets/polygons_unfilled_32_2',
+             dataset_type="train"):
+    dataset = data.MyDataset(os.path.join(dataset_dir, dataset_type),
+                             transform=transforms.ToTensor())
+    loader = DataLoader(dataset, batch_size=len(dataset))
+    imgs, labels = next(iter(loader))
+    gray_imgs = imgs.squeeze()
+    num_per_class = len(dataset) // 4
+
+    fig, axs = plt.subplots(1, 4, figsize=(10, 3))
+    for i in range(4):
+        img_mean = gray_imgs[i * num_per_class: (i + 1) * num_per_class].mean(dim=0)
+        ax = axs[i].imshow(img_mean, cmap="gray")
+        axs[i].set_title(f'{i}')
+    cb = fig.colorbar(ax, ax=axs, orientation='horizontal', location='bottom')
+    plt.show()
