@@ -236,7 +236,7 @@ def train_a_model(model_configs=None, train_configs=None, loader_kwargs=None):
                            f"{train_configs['log_dir']}/{model_configs['type']}/"
                            f"KS_{model_configs['kernel_size']}_"
                            f"LR_{train_configs['lr']:.1e}_"
-                           f"WD_{train_configs['weight_decay']}")
+                           f"WD_{train_configs['weight_decay']:.1e}")
     log_dir = os.path.join(log_dir, save_time)
     writer = SummaryWriter(log_dir=log_dir)
     with open(os.path.join(log_dir, 'para.txt'), mode='w') as f:

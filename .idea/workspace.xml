@@ -4,9 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="580800dd-0704-442b-84fc-70e4e6e2cdce" name="Changes" comment="modify Vis_pca()">
+    <list default="true" id="580800dd-0704-442b-84fc-70e4e6e2cdce" name="Changes" comment="fine tune hyper-parameters">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/grid_search.py" beforeDir="false" afterPath="$PROJECT_DIR$/fine_tune.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fine_tune.py" beforeDir="false" afterPath="$PROJECT_DIR$/fine_tune.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my_utils/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_utils/utils.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/polygon_classify_train.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/polygon_classify_train.ipynb" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -68,7 +69,8 @@
       <workItem from="1647331625522" duration="667000" />
       <workItem from="1647347353495" duration="5757000" />
       <workItem from="1647353239647" duration="377000" />
-      <workItem from="1647358568120" duration="18164000" />
+      <workItem from="1647358568120" duration="18511000" />
+      <workItem from="1647427029079" duration="7738000" />
     </task>
     <task id="LOCAL-00001" summary="check cuda and cudnn version">
       <created>1646034019501</created>
@@ -154,7 +156,14 @@
       <option name="project" value="LOCAL" />
       <updated>1647417000102</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL-00013" summary="fine tune hyper-parameters">
+      <created>1647422774253</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1647422774253</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -184,6 +193,7 @@
     <MESSAGE value="experiments on simple conv" />
     <MESSAGE value="Vis_pca()" />
     <MESSAGE value="modify Vis_pca()" />
-    <option name="LAST_COMMIT_MESSAGE" value="modify Vis_pca()" />
+    <MESSAGE value="fine tune hyper-parameters" />
+    <option name="LAST_COMMIT_MESSAGE" value="fine tune hyper-parameters" />
   </component>
 </project>

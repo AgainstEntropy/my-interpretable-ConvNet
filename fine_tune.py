@@ -6,7 +6,7 @@
 from my_utils.utils import train_a_model
 
 model_configs = {
-    'type': 'simple_conv',
+    'type': 'my_convnext',
     'kernel_size': 5,
     'depths': (1, 1, 1),
     'dims': (4, 8, 16)
@@ -18,13 +18,13 @@ train_configs = {
     'epochs': 140,
     'device': 'cuda:6',
     'optim': 'AdamW',
-    'lr': 1.5e-4,
+    'lr': 1.5e-5,
     'schedule': 'cosine_warm',
     'cos_T': 40,
     'cos_mul': 2,
-    'cos_iters': 2,
+    'cos_iters': 3,
     'momentum': 0.9,
-    'weight_decay': 0.005,
+    'weight_decay': 2e-4,
 }
 loader_kwargs = {
     'batch_size': train_configs['batch_size'],  # default:1
