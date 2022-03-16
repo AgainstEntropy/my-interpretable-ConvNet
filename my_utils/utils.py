@@ -12,6 +12,7 @@ from torch.utils.tensorboard import SummaryWriter
 from torchvision import transforms
 
 from my_utils import data, models
+from my_utils.models import create_model
 
 
 def Conv_BN_Relu(in_channel, out_channel, kernel_size=(3, 3), stride=None):
@@ -47,18 +48,17 @@ def sim(imgs_act, img):
     return torch.softmax(sims, dim=0)
 
 
-def save_model(model, optimizer, scheduler_main, scheduler_decay, model_type, save_dir, acc=00):
+def save_model(model, optimizer, scheduler, model_type, save_dir, acc=00):
     model_paras = model.state_dict()
     optim_paras = optimizer.state_dict()
-    scheduler_main_paras = scheduler_main.state_dict()
-    scheduler_decay_paras = scheduler_decay.state_dict()
+    scheduler_main_paras = scheduler.state_dict()
 
     save_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
     save_path = os.path.join(save_dir, f'{acc}_{model_type}_{save_time}.pt')
     torch.save({
         "model_paras": model_paras,
         "optim_paras": optim_paras,
-        "scheduler_paras": (scheduler_main_paras, scheduler_decay_paras)
+        "scheduler_paras": scheduler_main_paras
     }, save_path)
 
     print(f"\nSuccessfully saved model, optimizer and scheduler to {save_path}")
@@ -88,7 +88,7 @@ def check_accuracy(test_model, loader, training=False):
         print(f"Test accuracy is : {100. * test_acc:.2f}%\tInfer time: {time.time() - tic}")
 
 
-def trainer(model, optimizer, scheduler_main, scheduler_decay, loss_fn, train_loader,
+def trainer(model, optimizer, scheduler, loss_fn, train_loader,
             check_fn, check_loaders, batch_step, epochs=2, log_every=10, writer=None):
     """
 
@@ -124,9 +124,7 @@ def trainer(model, optimizer, scheduler_main, scheduler_decay, loss_fn, train_lo
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            scheduler_main.step(batch_step / iters)
-            if epoch % 20 == 10:
-                scheduler_decay.step()
+            scheduler.step(batch_step / iters)
 
             # check accuracy
             if batch_idx % log_every == 0:
@@ -143,21 +141,30 @@ def trainer(model, optimizer, scheduler_main, scheduler_decay, loss_fn, train_lo
     return batch_step
 
 
-def train_a_model(model_type='simple_conv', optim_type='Adam', schedule_type='cosine',
-                  configs=None, loader_kwargs=None):
-    if configs is None:
-        configs = {
-            'dataset_dir': '/home/wangyh/01-Projects/03-my/Datasets/polygons_unfilled_32_2',
+def train_a_model(model_configs=None, train_configs=None, loader_kwargs=None):
+    """
+        Train a model from zero.
+    """
+    if train_configs is None:
+        train_configs = {
+            'log_dir': 'newruns',
+            'dataset_dir': '/home/wangyh/01-Projects/03-my/Datasets/polygons_unfilled_64_3',
             'batch_size': 256,
+            'epochs': 50,
             'device': 'cuda:7',
+            'optim': 'Adam',
             'lr': 1e-4,
-            'cos_T': 10,
+            'schedule': 'cosine_warm',
+            'cos_T': 15,
+            'cos_mul': 2,
+            'cos_iters': 3,
             'momentum': 0.9,
             'weight_decay': 0.05,
         }
     # make dataset
-    fig_resize = 32
-    mean, std = torch.tensor(0.2036), torch.tensor(0.4027)
+    fig_resize = 64
+    # mean, std = torch.tensor(0.2036), torch.tensor(0.4027)  # polygons_unfilled_32_2
+    mean, std = torch.tensor(0.1094), torch.tensor(0.3660)  # polygons_unfilled_64_3
     T = transforms.Compose([
         transforms.ToTensor(),
         transforms.Resize((fig_resize, fig_resize)),
@@ -165,7 +172,7 @@ def train_a_model(model_type='simple_conv', optim_type='Adam', schedule_type='co
     ])
     if loader_kwargs is None:
         loader_kwargs = {
-            'batch_size': configs['batch_size'],  # default:1
+            'batch_size': train_configs['batch_size'],  # default:1
             'shuffle': True,  # default:False
             'num_workers': 4,  # default:0
             'pin_memory': True,  # default:False
@@ -174,78 +181,85 @@ def train_a_model(model_type='simple_conv', optim_type='Adam', schedule_type='co
             'persistent_workers': False  # default:False
         }
     train_loader, test_loader, check_loaders = data.make_datasets(
-        dataset_dir=configs['dataset_dir'],
+        dataset_dir=train_configs['dataset_dir'],
         loader_kwargs=loader_kwargs,
         transform=T
     )
 
-    model, optimizer, scheduler_main, scheduler_decay = [None] * 4
+    # create model
+    if model_configs is None:
+        model_configs = {
+            'type': 'simple_conv',
+            'kernel_size': 3,
+            'depths': (1, 1, 1),
+            'dims': (4, 8, 16)
+        }
+    model, optimizer, scheduler = [None] * 3
     # define model
-    if model_type == 'simple_conv':
-        model = models.simple_Conv()
-    elif model_type == 'my_convnext':
-        model = models.my_ConvNeXt()
-    model = model.to(configs['device'])
+    model = create_model(**model_configs)
+    model = model.to(train_configs['device'])
 
     # define optimizer
-    if optim_type == 'Adam':
-        optimizer = optim.Adam(params=[{'params': model.parameters(), 'initial_lr': configs['lr']}],
-                               lr=configs['lr'],
-                               weight_decay=configs['weight_decay'])
-    elif optim_type == 'AdamW':
+    if train_configs['optim'] == 'Adam':
+        optimizer = optim.Adam(params=[{'params': model.parameters(), 'initial_lr': train_configs['lr']}],
+                               lr=train_configs['lr'],
+                               weight_decay=train_configs['weight_decay'])
+    elif train_configs['optim'] == 'AdamW':
         optimizer = optim.AdamW(model.parameters(),
-                                lr=configs['lr'],
-                                weight_decay=configs['weight_decay'])
-    elif optim_type == 'AdaBound':
+                                lr=train_configs['lr'],
+                                weight_decay=train_configs['weight_decay'])
+    elif train_configs['optim'] == 'AdaBound':
         optimizer = adabound.AdaBound(model.parameters(),
-                                      lr=configs['lr'],
-                                      weight_decay=configs['weight_decay'],
+                                      lr=train_configs['lr'],
+                                      weight_decay=train_configs['weight_decay'],
                                       final_lr=0.1)
-    elif optim_type == 'SGD':
+    elif train_configs['optim'] == 'SGD':
         optimizer = optim.SGD(model.parameters(),
-                              lr=configs['lr'],
-                              weight_decay=configs['weight_decay'],
-                              momentum=configs['momentum'])
+                              lr=train_configs['lr'],
+                              weight_decay=train_configs['weight_decay'],
+                              momentum=train_configs['momentum'])
 
     # define lr scheduler
-    if schedule_type == 'cosine_warm':
-        scheduler_main = optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=5, T_mult=2)
-    elif schedule_type == 'cosine':
-        scheduler_main = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=configs['cos_T'])
-    scheduler_decay = optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.9)
+    if train_configs['schedule'] == 'cosine_warm':
+        train_configs['epochs'] = (2 ** train_configs['cos_iters'] - 1) * train_configs['cos_T']
+        scheduler = optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer,
+                                                                   T_0=train_configs['cos_T'], T_mult=2)
+    elif train_configs['schedule'] == 'cosine_anneal':
+        scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=train_configs['cos_T'])
     loss_func = nn.CrossEntropyLoss()
-    print(f"model ({model_type}) is on {next(model.parameters()).device}")
+    print(f"model ({model_configs['type']}) is on {next(model.parameters()).device}")
 
     # tensorboard writer
     save_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
     log_dir = os.path.join(os.getcwd(),
-                           f"tblogs/BS_{configs['batch_size']}_"
-                           f"LR_{configs['lr']:.1e}_"
-                           f"WD_{configs['weight_decay']}")
+                           f"{train_configs['log_dir']}/BS_{train_configs['batch_size']}_"
+                           f"LR_{train_configs['lr']:.1e}_"
+                           f"WD_{train_configs['weight_decay']}")
     log_dir = os.path.join(log_dir, save_time)
     writer = SummaryWriter(log_dir=log_dir)
     with open(os.path.join(log_dir, 'para.txt'), mode='w') as f:
-        # f.write('# basic paras\n')
-        f.write(f'model_type :\t{model_type}\n\n')
-        f.write('## -- dataset configs -- ##')
+        f.write('## -- model configs -- ##\n')
+        for k, v in model_configs.items():
+            f.write(f'{k} :\t{v}\n')
+
+        f.write('\n## -- dataset configs -- ##')
         for k, v in loader_kwargs.items():
             f.write(f'{k} :\t{v}\n')
-        f.write('## -- train configs -- ##')
-        f.write(f'optim_type :\t{optim_type}\n')
-        f.write(f'schedule_type :\t{schedule_type}\n')
-        for k, v in configs.items():
+
+        f.write('\n## -- train configs -- ##')
+        for k, v in train_configs.items():
             f.write(f'{k} :\t{v}\n')
 
     trainer(model=model, optimizer=optimizer,
-            scheduler_main=scheduler_main, scheduler_decay=scheduler_decay,
+            scheduler=scheduler,
             loss_fn=loss_func,
             train_loader=train_loader,
             check_fn=check_accuracy,
             check_loaders=check_loaders,
-            batch_step=0, epochs=50, log_every=30, writer=writer)
+            batch_step=0, epochs=train_configs['epochs'], log_every=40000 // train_configs['batch_size'] // 4, writer=writer)
 
     writer.close()
 
     final_acc = check_accuracy(model, test_loader, True)
-    save_model(model, optimizer, scheduler_main, scheduler_decay,
-               model_type, log_dir, acc=int(100 * final_acc))
+    save_model(model, optimizer, scheduler,
+               model_configs['type'], log_dir, acc=int(100 * final_acc))

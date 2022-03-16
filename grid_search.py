@@ -17,4 +17,4 @@ for lr in [2e-4, 1.5e-4, 1e-4]:
                 'momentum': 0.9,
                 'weight_decay': weight_decay,
             }
-            train_a_model(configs=train_config)
+            train_a_model(train_configs=train_config)

@@ -10,6 +10,15 @@ import torch.nn.functional as F
 
 # from timm.models.layers import trunc_normal_, DropPath
 
+def create_model(type='simple_conv', kernel_size=3,
+                 depths=(1, 1, 1), dims=(4, 8, 16)):
+    model_class = None
+    if type == "simple_conv":
+        model_class = simple_Conv
+    elif type == "my_convnext":
+        model_class = my_ConvNeXt
+    return model_class(kernel_size=kernel_size, depths=depths, dims=dims)
+
 
 class Block(nn.Module):
     r"""
@@ -17,9 +26,9 @@ class Block(nn.Module):
         dim (int): Number of input channels.
     """
 
-    def __init__(self, dim, drop_path=0., layer_scale_init_value=1e-6):
+    def __init__(self, dim, kernel_size=3, drop_path=0., layer_scale_init_value=1e-6):
         super().__init__()
-        self.dwconv = nn.Conv2d(dim, dim, kernel_size=3, padding=1, groups=dim, bias=False)  # depthwise conv
+        self.dwconv = nn.Conv2d(dim, dim, kernel_size=kernel_size, padding=1, groups=dim, bias=False)  # depthwise conv
         # self.norm = LayerNorm(dim, eps=1e-6)
         self.norm = nn.BatchNorm2d(dim, eps=1e-6)
         self.pwconv1 = nn.Linear(dim, 2 * dim)  # pointwise/1x1 convs, implemented with linear layers
@@ -58,7 +67,7 @@ class my_ConvNeXt(nn.Module):
         head_init_scale (float): Init scaling value for classifier weights and biases. Default: 1.
     """
 
-    def __init__(self, in_chans=1, num_classes=4,
+    def __init__(self, in_chans=1, num_classes=4, kernel_size=3,
                  depths=(1, 1, 1), dims=(4, 8, 16), drop_path_rate=0.,
                  layer_scale_init_value=1e-2, head_init_scale=1.):
         super().__init__()
@@ -102,7 +111,8 @@ class my_ConvNeXt(nn.Module):
             #             layer_scale_init_value=layer_scale_init_value) for j in range(depths[i])]
             # )
             stage = nn.Sequential(
-                *[Block(dim=dims[i], layer_scale_init_value=layer_scale_init_value) for _ in range(depths[i])]
+                *[Block(dim=dims[i], kernel_size=kernel_size,
+                        layer_scale_init_value=layer_scale_init_value) for _ in range(depths[i])]
             )
             self.stages.append(stage)
             # cur += depths[i]
@@ -188,7 +198,7 @@ class simple_Conv(nn.Module):
         dims (tuple(int)): Feature dimension at each stage. Default: (4, 8, 16)
     """
 
-    def __init__(self, in_chans=1, num_classes=4,
+    def __init__(self, in_chans=1, num_classes=4, kernel_size=3,
                  depths=(1, 1, 1), dims=(4, 8, 16)):
         super().__init__()
 
@@ -201,10 +211,10 @@ class simple_Conv(nn.Module):
 
         for i in range(self.num_layers - 1):
             stage = nn.Sequential(
-                *[self.conv_block(dims[i], dims[i]) for _ in range(depths[i] - 1)]
+                *[self.conv_block(dims[i], dims[i], kernel_size) for _ in range(depths[i] - 1)]
             )
             self.stages.append(stage)
-            self.stages.append(self.conv_block(dims[i], dims[i + 1], act='relu'))
+            self.stages.append(self.conv_block(dims[i], dims[i + 1], kernel_size, act='relu'))
 
         self.head = nn.Linear(dims[-1], num_classes)
 
