@@ -4,14 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="580800dd-0704-442b-84fc-70e4e6e2cdce" name="Changes" comment="new dataset, width=64, thick=2,3,4, float center and vertex">
+    <list default="true" id="580800dd-0704-442b-84fc-70e4e6e2cdce" name="Changes" comment="modify Vis_pca()">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/grid_search.py" beforeDir="false" afterPath="$PROJECT_DIR$/grid_search.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/my_utils/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_utils/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/my_utils/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_utils/utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/my_utils/vis.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_utils/vis.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/grid_search.py" beforeDir="false" afterPath="$PROJECT_DIR$/fine_tune.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/polygon_classify_train.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/polygon_classify_train.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/test.ipynb" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -72,7 +68,7 @@
       <workItem from="1647331625522" duration="667000" />
       <workItem from="1647347353495" duration="5757000" />
       <workItem from="1647353239647" duration="377000" />
-      <workItem from="1647358568120" duration="11614000" />
+      <workItem from="1647358568120" duration="18164000" />
     </task>
     <task id="LOCAL-00001" summary="check cuda and cudnn version">
       <created>1646034019501</created>
@@ -137,7 +133,28 @@
       <option name="project" value="LOCAL" />
       <updated>1647353157177</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="experiments on simple conv">
+      <created>1647412157449</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1647412157449</updated>
+    </task>
+    <task id="LOCAL-00011" summary="Vis_pca()">
+      <created>1647412170170</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1647412170170</updated>
+    </task>
+    <task id="LOCAL-00012" summary="modify Vis_pca()">
+      <created>1647417000102</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1647417000102</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -164,6 +181,9 @@
     <MESSAGE value="grid search" />
     <MESSAGE value="pca" />
     <MESSAGE value="new dataset, width=64, thick=2,3,4, float center and vertex" />
-    <option name="LAST_COMMIT_MESSAGE" value="new dataset, width=64, thick=2,3,4, float center and vertex" />
+    <MESSAGE value="experiments on simple conv" />
+    <MESSAGE value="Vis_pca()" />
+    <MESSAGE value="modify Vis_pca()" />
+    <option name="LAST_COMMIT_MESSAGE" value="modify Vis_pca()" />
   </component>
 </project>
