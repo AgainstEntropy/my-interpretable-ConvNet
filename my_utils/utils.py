@@ -221,7 +221,8 @@ def train_a_model(model_configs=None, train_configs=None, loader_kwargs=None):
 
     # define lr scheduler
     if train_configs['schedule'] == 'cosine_warm':
-        train_configs['epochs'] = (2 ** train_configs['cos_iters'] - 1) * train_configs['cos_T']
+        train_configs['epochs'] = int((train_configs['cos_mul'] ** train_configs['cos_iters'] - 1) / \
+                                      (train_configs['cos_mul'] - 1) * train_configs['cos_T'])
         scheduler = optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer,
                                                                    T_0=train_configs['cos_T'], T_mult=2)
     elif train_configs['schedule'] == 'cosine_anneal':
@@ -232,7 +233,8 @@ def train_a_model(model_configs=None, train_configs=None, loader_kwargs=None):
     # tensorboard writer
     save_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
     log_dir = os.path.join(os.getcwd(),
-                           f"{train_configs['log_dir']}/BS_{train_configs['batch_size']}_"
+                           f"{train_configs['log_dir']}/{model_configs['type']}/"
+                           f"KS_{model_configs['kernel_size']}_"
                            f"LR_{train_configs['lr']:.1e}_"
                            f"WD_{train_configs['weight_decay']}")
     log_dir = os.path.join(log_dir, save_time)
@@ -256,7 +258,8 @@ def train_a_model(model_configs=None, train_configs=None, loader_kwargs=None):
             train_loader=train_loader,
             check_fn=check_accuracy,
             check_loaders=check_loaders,
-            batch_step=0, epochs=train_configs['epochs'], log_every=40000 // train_configs['batch_size'] // 4, writer=writer)
+            batch_step=0, epochs=train_configs['epochs'], log_every=40000 // train_configs['batch_size'] // 4,
+            writer=writer)
 
     writer.close()
 

@@ -155,9 +155,11 @@ def Vis_pca(dim=2,
 
     x = PCA(dim).fit_transform(input_imgs)
 
-    plt.figure()
+    fig = plt.figure(figsize=(8, 8))
+    ax = fig.add_subplot(111, projection='3d') if dim == 3 else fig.add_subplot(111)
     for i in range(4):
-        plt.scatter(x[labels == i, 0], x[labels == i, 1], label=f'{i + 3}')
-    plt.legend()
+        # ax.scatter(x[labels == i, 0], x[labels == i, 1], label=f'{i + 3}')
+        ax.scatter(*[x[labels == i, _] for _ in range(dim)], label=f'{i + 3}')
+    plt.legend(loc='best')
     plt.title(f"PCA(n={dim})")
     plt.show()
