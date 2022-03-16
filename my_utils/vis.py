@@ -4,10 +4,12 @@
 # @File    : vis.py
 import os.path
 
-import torch
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
+from sklearn.decomposition import PCA
+
+import torch
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
@@ -139,4 +141,23 @@ def Vis_mean(dataset_dir='/home/wangyh/01-Projects/03-my/Datasets/polygons_unfil
         ax = axs[i].imshow(img_mean, cmap="gray")
         axs[i].set_title(f'{i}')
     cb = fig.colorbar(ax, ax=axs, orientation='horizontal', location='bottom')
+    plt.show()
+
+
+def Vis_pca(dim=2,
+            dataset_dir='/home/wangyh/01-Projects/03-my/Datasets/polygons_unfilled_32_2',
+            dataset_type="train"):
+    dataset = data.MyDataset(os.path.join(dataset_dir, dataset_type),
+                             transform=transforms.ToTensor())
+    loader = DataLoader(dataset, batch_size=len(dataset))
+    imgs, labels = next(iter(loader))
+    input_imgs = imgs.reshape(len(dataset), -1)
+
+    x = PCA(dim).fit_transform(input_imgs)
+
+    plt.figure()
+    for i in range(4):
+        plt.scatter(x[labels == i, 0], x[labels == i, 1], label=f'{i + 3}')
+    plt.legend()
+    plt.title(f"PCA(n={dim})")
     plt.show()
