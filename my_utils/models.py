@@ -163,10 +163,12 @@ class my_ConvNeXt(nn.Module):
 
 
 class my_ConvNeXt_vis(my_ConvNeXt):
-    def __init__(self):
-        my_ConvNeXt.__init__(self, in_chans=1, num_classes=4,
-                             depths=(1, 1, 1), dims=(4, 8, 16), drop_path_rate=0.,
-                             layer_scale_init_value=1e-2, head_init_scale=1.)
+    def __init__(self, in_chans=1, num_classes=4, kernel_size=3,
+                 depths=(1, 1, 1), dims=(4, 8, 16), drop_path_rate=0.,
+                 layer_scale_init_value=1e-2, head_init_scale=1.):
+        my_ConvNeXt.__init__(self, in_chans=in_chans, num_classes=num_classes, kernel_size=kernel_size,
+                             depths=depths, dims=dims, drop_path_rate=drop_path_rate,
+                             layer_scale_init_value=layer_scale_init_value, head_init_scale=head_init_scale)
         self.mid_outputs = None
 
     def forward_features(self, x):
