@@ -4,13 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="580800dd-0704-442b-84fc-70e4e6e2cdce" name="Changes" comment="fine tune hyper-parameters">
+    <list default="true" id="580800dd-0704-442b-84fc-70e4e6e2cdce" name="Changes" comment="train my_convnext with 7*7 kernel size and test CAM">
+      <change afterPath="$PROJECT_DIR$/recorder.ipynb" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/train_paras.xlsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/fine_tune.py" beforeDir="false" afterPath="$PROJECT_DIR$/fine_tune.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/my_utils/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_utils/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/my_utils/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_utils/utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/polygen_classify_cam.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/polygen_classify_cam.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/polygon_classify_vis.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/polygon_classify_vis.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/pre_process.ipynb" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -20,8 +19,8 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Jupyter Notebook" />
         <option value="Python Script" />
+        <option value="Jupyter Notebook" />
       </list>
     </option>
   </component>
@@ -73,7 +72,9 @@
       <workItem from="1647353239647" duration="377000" />
       <workItem from="1647358568120" duration="18511000" />
       <workItem from="1647427029079" duration="8239000" />
-      <workItem from="1647490477698" duration="15560000" />
+      <workItem from="1647490477698" duration="15735000" />
+      <workItem from="1647595350613" duration="2931000" />
+      <workItem from="1647609757671" duration="4804000" />
     </task>
     <task id="LOCAL-00001" summary="check cuda and cudnn version">
       <created>1646034019501</created>
@@ -173,7 +174,14 @@
       <option name="project" value="LOCAL" />
       <updated>1647441083305</updated>
     </task>
-    <option name="localTasksCounter" value="15" />
+    <task id="LOCAL-00015" summary="train my_convnext with 7*7 kernel size and test CAM">
+      <created>1647523632409</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1647523632409</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -204,6 +212,7 @@
     <MESSAGE value="Vis_pca()" />
     <MESSAGE value="modify Vis_pca()" />
     <MESSAGE value="fine tune hyper-parameters" />
-    <option name="LAST_COMMIT_MESSAGE" value="fine tune hyper-parameters" />
+    <MESSAGE value="train my_convnext with 7*7 kernel size and test CAM" />
+    <option name="LAST_COMMIT_MESSAGE" value="train my_convnext with 7*7 kernel size and test CAM" />
   </component>
 </project>

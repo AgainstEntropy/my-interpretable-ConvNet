@@ -6,9 +6,9 @@
 from my_utils.utils import train_a_model
 
 model_configs = {
-    'type': 'my_convnext',
-    'kernel_size': 7,
-    'depths': (1, 2, 1),
+    'type': 'simple_conv',
+    'kernel_size': 9,
+    'depths': (1, 1, 1),
     'dims': (4, 8, 16)
 }
 train_configs = {
@@ -16,11 +16,11 @@ train_configs = {
     'dataset_dir': '/home/wangyh/01-Projects/03-my/Datasets/polygons_unfilled_64_3',
     'batch_size': 512,
     'epochs': 140,
-    'device': 'cuda:7',
+    'device': 'cuda:4',
     'optim': 'AdamW',
-    'lr': 1.5e-5,
+    'lr': 1.2e-4,
     'schedule': 'cosine_warm',
-    'cos_T': 40,
+    'cos_T': 20,
     'cos_mul': 2,
     'cos_iters': 3,
     'momentum': 0.9,
