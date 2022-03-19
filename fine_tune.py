@@ -6,7 +6,7 @@
 from my_utils.utils import train_a_model
 
 model_configs = {
-    'type': 'simple_conv',
+    'type': 'my_convnext',
     'kernel_size': 9,
     'depths': (1, 1, 1),
     'dims': (4, 8, 16)
@@ -16,18 +16,18 @@ train_configs = {
     'dataset_dir': '/home/wangyh/01-Projects/03-my/Datasets/polygons_unfilled_64_3',
     'batch_size': 512,
     'epochs': 140,
-    'device': 'cuda:4',
+    'device': 'cuda:7',
     'optim': 'AdamW',
-    'lr': 1.2e-4,
+    'lr': 1.3e-5,
     'schedule': 'cosine_warm',
-    'cos_T': 20,
+    'cos_T': 50,
     'cos_mul': 2,
-    'cos_iters': 3,
+    'cos_iters': 2,
     'momentum': 0.9,
-    'weight_decay': 1e-3,
+    'weight_decay': 7e-4,
 }
 loader_kwargs = {
-    'batch_size': train_configs['batch_size'],  # default:1
+    'batch_size': train_configs['batch_size'],  # default:512
     'shuffle': True,  # default:False
     'num_workers': 4,  # default:0
     'pin_memory': True,  # default:False

@@ -4,12 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="580800dd-0704-442b-84fc-70e4e6e2cdce" name="Changes" comment="train my_convnext with 7*7 kernel size and test CAM">
-      <change afterPath="$PROJECT_DIR$/recorder.ipynb" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/train_paras.xlsx" afterDir="false" />
+    <list default="true" id="580800dd-0704-442b-84fc-70e4e6e2cdce" name="Changes" comment="prepare for parallel Coordinates plot">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/fine_tune.py" beforeDir="false" afterPath="$PROJECT_DIR$/fine_tune.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/pre_process.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my_utils/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_utils/utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/recorder.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/recorder.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/train_paras.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/records/train_paras.xlsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -74,7 +74,8 @@
       <workItem from="1647427029079" duration="8239000" />
       <workItem from="1647490477698" duration="15735000" />
       <workItem from="1647595350613" duration="2931000" />
-      <workItem from="1647609757671" duration="4804000" />
+      <workItem from="1647609757671" duration="4841000" />
+      <workItem from="1647669379904" duration="5031000" />
     </task>
     <task id="LOCAL-00001" summary="check cuda and cudnn version">
       <created>1646034019501</created>
@@ -181,7 +182,14 @@
       <option name="project" value="LOCAL" />
       <updated>1647523632409</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="prepare for parallel Coordinates plot">
+      <created>1647614626368</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1647614626368</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -213,6 +221,7 @@
     <MESSAGE value="modify Vis_pca()" />
     <MESSAGE value="fine tune hyper-parameters" />
     <MESSAGE value="train my_convnext with 7*7 kernel size and test CAM" />
-    <option name="LAST_COMMIT_MESSAGE" value="train my_convnext with 7*7 kernel size and test CAM" />
+    <MESSAGE value="prepare for parallel Coordinates plot" />
+    <option name="LAST_COMMIT_MESSAGE" value="prepare for parallel Coordinates plot" />
   </component>
 </project>

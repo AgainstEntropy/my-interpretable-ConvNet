@@ -11,6 +11,8 @@ from torch import nn, optim
 from torch.utils.tensorboard import SummaryWriter
 from torchvision import transforms
 
+from openpyxl import load_workbook
+
 from my_utils import data, models
 from my_utils.models import create_model
 
@@ -253,6 +255,25 @@ def train_a_model(model_configs=None, train_configs=None, loader_kwargs=None):
         for k, v in train_configs.items():
             f.write(f'{k} :\t{v}\n')
 
+    # record some configs
+    xlsx_path = '/home/wangyh/01-Projects/03-my/records/train_paras.xlsx'
+    wb = load_workbook(xlsx_path)
+    ws = wb['Sheet1']
+    record_data = [model_configs['type'],
+                   model_configs['kernel_size'],
+                   sum(model_configs['depths']),
+                   loader_kwargs['batch_size'],
+                   train_configs['lr'],
+                   train_configs['weight_decay'],
+                   train_configs['optim'],
+                   train_configs['schedule'],
+                   train_configs['cos_T'],
+                   train_configs['epochs']]
+    ws.append(record_data)
+    wb.save(filename=xlsx_path)
+    row = len(list(ws.values))
+
+    # start training!
     trainer(model=model, optimizer=optimizer,
             scheduler=scheduler,
             loss_fn=loss_func,
@@ -267,3 +288,6 @@ def train_a_model(model_configs=None, train_configs=None, loader_kwargs=None):
     final_acc = check_accuracy(model, test_loader, True)
     save_model(model, optimizer, scheduler,
                model_configs['type'], log_dir, acc=int(100 * final_acc))
+
+    ws.cell(column=len(record_data) + 1, row=row, value=final_acc)
+    wb.save(filename=xlsx_path)
