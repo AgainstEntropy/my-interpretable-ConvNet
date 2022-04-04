@@ -4,10 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="580800dd-0704-442b-84fc-70e4e6e2cdce" name="Changes" comment="prepare for parallel Coordinates plot">
+    <list default="true" id="580800dd-0704-442b-84fc-70e4e6e2cdce" name="Changes" comment="begin record for parallel Coordinates plot">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fine_tune.py" beforeDir="false" afterPath="$PROJECT_DIR$/fine_tune.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/my_utils/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_utils/utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my_utils/vis.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_utils/vis.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/polygen_classify_cam.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/polygen_classify_cam.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/polygon_classify_train.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/polygon_classify_train.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/polygon_classify_vis.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/polygon_classify_vis.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pre_process.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/pre_process.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/recorder.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/recorder.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/records/train_paras.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/records/train_paras.xlsx" afterDir="false" />
     </list>
@@ -50,7 +54,7 @@
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
-    <property name="settings.editor.selected.configurable" value="configurable.group.build" />
+    <property name="settings.editor.selected.configurable" value="org.jetbrains.plugins.notebooks.jupyter.connections.configuration.JupyterServerConfigurable" />
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
@@ -75,7 +79,12 @@
       <workItem from="1647490477698" duration="15735000" />
       <workItem from="1647595350613" duration="2931000" />
       <workItem from="1647609757671" duration="4841000" />
-      <workItem from="1647669379904" duration="5031000" />
+      <workItem from="1647669379904" duration="5079000" />
+      <workItem from="1647700466474" duration="338000" />
+      <workItem from="1648102236534" duration="1851000" />
+      <workItem from="1648802696523" duration="2575000" />
+      <workItem from="1648873235207" duration="644000" />
+      <workItem from="1649083465616" duration="5619000" />
     </task>
     <task id="LOCAL-00001" summary="check cuda and cudnn version">
       <created>1646034019501</created>
@@ -189,7 +198,14 @@
       <option name="project" value="LOCAL" />
       <updated>1647614626368</updated>
     </task>
-    <option name="localTasksCounter" value="17" />
+    <task id="LOCAL-00017" summary="begin record for parallel Coordinates plot">
+      <created>1647690181944</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1647690181944</updated>
+    </task>
+    <option name="localTasksCounter" value="18" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -222,6 +238,7 @@
     <MESSAGE value="fine tune hyper-parameters" />
     <MESSAGE value="train my_convnext with 7*7 kernel size and test CAM" />
     <MESSAGE value="prepare for parallel Coordinates plot" />
-    <option name="LAST_COMMIT_MESSAGE" value="prepare for parallel Coordinates plot" />
+    <MESSAGE value="begin record for parallel Coordinates plot" />
+    <option name="LAST_COMMIT_MESSAGE" value="begin record for parallel Coordinates plot" />
   </component>
 </project>

@@ -155,11 +155,20 @@ def Vis_pca(dim=2,
 
     x = PCA(dim).fit_transform(input_imgs)
 
-    fig = plt.figure(figsize=(8, 8))
-    ax = fig.add_subplot(111, projection='3d') if dim == 3 else fig.add_subplot(111)
+    color_list = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728',
+                  '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
+
+    fig = plt.figure(figsize=(16, 8))
+    ax1 = fig.add_subplot(121, projection='3d') if dim == 3 else fig.add_subplot(121)
+    if dim == 2:
+        ax2 = fig.add_subplot(122, projection='3d') if dim == 3 else fig.add_subplot(122)
     for i in range(4):
-        # ax.scatter(x[labels == i, 0], x[labels == i, 1], label=f'{i + 3}')
-        ax.scatter(*[x[labels == i, _] for _ in range(dim)], label=f'{i + 3}')
-    plt.legend(loc='best')
-    plt.title(f"PCA(n={dim})")
+        ax1.scatter(*[x[labels == i, _] for _ in range(dim)], label=f'{i + 3}')
+        if dim == 2:
+            ax2.scatter(*[x[labels == 3-i, _] for _ in range(dim)], label=f'{6 - i}', c=color_list[3-i])
+    ax1.legend(title='edges #', loc='best')
+    if dim == 2:
+        handles, labels = ax2.get_legend_handles_labels()
+        ax2.legend(handles[::-1], labels[::-1], title='edges #', loc='best')
+    fig.suptitle(f"PCA(n={dim})")
     plt.show()
