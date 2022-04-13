@@ -4,15 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="580800dd-0704-442b-84fc-70e4e6e2cdce" name="Changes" comment="vis for pca">
+    <list default="true" id="580800dd-0704-442b-84fc-70e4e6e2cdce" name="Changes" comment="vis for sim_cam">
+      <change afterPath="$PROJECT_DIR$/SimCam/__init__.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/my_utils/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_utils/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/my_utils/vis.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_utils/vis.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/polygen_classify_cam.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/polygen_classify_cam.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/polygon_classify_vis.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/polygon_classify_vis.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pytorch_grad_cam/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/pytorch_grad_cam/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/recorder.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/recorder.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/train_paras.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/records/train_paras.xlsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -22,8 +17,8 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Python Script" />
         <option value="Jupyter Notebook" />
+        <option value="Python Script" />
       </list>
     </option>
   </component>
@@ -53,7 +48,7 @@
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
-    <property name="settings.editor.selected.configurable" value="org.jetbrains.plugins.notebooks.jupyter.connections.configuration.JupyterServerConfigurable" />
+    <property name="settings.editor.selected.configurable" value="Jupyter Settings" />
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
@@ -85,7 +80,7 @@
       <workItem from="1648873235207" duration="644000" />
       <workItem from="1649083465616" duration="5808000" />
       <workItem from="1649124438204" duration="7419000" />
-      <workItem from="1649810726936" duration="10374000" />
+      <workItem from="1649810726936" duration="15327000" />
     </task>
     <task id="LOCAL-00001" summary="check cuda and cudnn version">
       <created>1646034019501</created>
@@ -213,7 +208,14 @@
       <option name="project" value="LOCAL" />
       <updated>1649091209877</updated>
     </task>
-    <option name="localTasksCounter" value="19" />
+    <task id="LOCAL-00019" summary="vis for sim_cam">
+      <created>1649822570611</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1649822570611</updated>
+    </task>
+    <option name="localTasksCounter" value="20" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -248,6 +250,7 @@
     <MESSAGE value="prepare for parallel Coordinates plot" />
     <MESSAGE value="begin record for parallel Coordinates plot" />
     <MESSAGE value="vis for pca" />
-    <option name="LAST_COMMIT_MESSAGE" value="vis for pca" />
+    <MESSAGE value="vis for sim_cam" />
+    <option name="LAST_COMMIT_MESSAGE" value="vis for sim_cam" />
   </component>
 </project>
