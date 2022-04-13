@@ -257,6 +257,30 @@ class simple_Conv(nn.Module):
         return scores
 
 
+class simple_Conv_vis(simple_Conv):
+    def __init__(self, in_chans=1, num_classes=4, kernel_size=3,
+                 depths=(1, 1, 1), dims=(4, 8, 16)):
+        simple_Conv.__init__(self, in_chans=in_chans, num_classes=num_classes, kernel_size=kernel_size,
+                             depths=depths, dims=dims)
+        self.mid_outputs = None
+
+    def forward(self, x):
+        # save some median outputs when inferring
+        self.mid_outputs = []
+
+        for stage in self.stages:
+            x = stage(x)  # (N, C[i], H, W) -> (N, C[i+1], H, W)
+            mid = x.detach().cpu().squeeze()
+            for c in range(mid.size(0)):
+                mid[c] /= mid[c].max()
+            self.mid_outputs.append(mid)
+
+        x = x.mean([-2, -1])  # global average pooling, (N, C, H, W) -> (N, C)
+        scores = self.head(x)
+
+        return scores, self.mid_outputs
+
+
 class LayerNorm(nn.Module):
     r""" LayerNorm that supports two data formats: channels_last (default) or channels_first.
     The ordering of the dimensions in the inputs. channels_last corresponds to inputs with

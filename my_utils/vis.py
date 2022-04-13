@@ -61,7 +61,7 @@ def vis_act(act, label, row_num=6):
     Returns:
 
     """
-    act = act.permute(1, 2, 3, 0)  # (1, C, H, W) -> (C, H, W, 1)
+    # act = act.permute(1, 2, 3, 0)  # (1, C, H, W) -> (C, H, W, 1)
     chans_num = act.size(0)
     if row_num ** 2 < chans_num:
         subfig_num = row_num ** 2
