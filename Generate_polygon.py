@@ -31,7 +31,17 @@ def points(n, width=64, float_rate=(0.05, 0.05)):
     r = w2 * (1 - sum(float_rate))
     point_list = center + r * cs_list.T + r_float_rate * w2 * np.random.randn(2)
 
-    return np.array(point_list, dtype=int)
+    return r, np.array(point_list, dtype=int)
+
+
+def get_mPoints_and_eLength(point_list):
+    mPoints = np.zeros_like(point_list)
+    eLengths = np.zeros(point_list.shape[0])
+    for i, p in enumerate(point_list):
+        mPoints[i] = (point_list[i - 1] + p) / 2
+        eLengths[i] = np.linalg.norm(point_list[i - 1] - p)
+
+    return mPoints, eLengths
 
 
 def draw_polygon(point_list, fill=False, width=32, thickness=1):
@@ -44,21 +54,42 @@ def draw_polygon(point_list, fill=False, width=32, thickness=1):
     return img
 
 
-parser = argparse.ArgumentParser()
+def draw_mask(img, fill, maskType, maskRate, r, point_list):
+    if maskType == 'edge':
+        if fill:
+            pass
+        else:
+            mPoints, eLengths = get_mPoints_and_eLength(point_list)
+            for p, mask_l in zip(mPoints, np.round(eLengths * maskRate).astype(int)):
+                cv2.circle(img, p, mask_l, color=0, thickness=-1)
+    elif maskType == 'vertex':
+        mask_l = round(r * maskRate)
+        for p in point_list:
+            cv2.circle(img, p, mask_l, color=0, thickness=-1)
+
+
+parser = argparse.ArgumentParser(description='Generate some polygons.')
 parser.add_argument('-ds', '--dataset', type=str, required=True, default='train',
+                    choices=['train', 'valid', 'test'],
                     help="the dataset you want to generate.")
 parser.add_argument('-fn', '--figNum', type=int, default=2000,
                     help="the number of pictures to generate. Default: 2000.")
-parser.add_argument('-f', '--fill', default=False,
-                    help="whether or not to fill the polygons. Default: False.")
+parser.add_argument('-f', '--fill', type=int, default=0,
+                    choices=[0, 1],
+                    help="whether or not to fill the polygons. Default: 0.")
 parser.add_argument('-w', '--width', type=int, default=64,
                     help="the width of figure to generate.  Default: 64.")
 parser.add_argument('-th', '--thickness', type=int, default=3,
                     help="thickness of polygon line. Default: 3.")
-parser.add_argument('-an', '--angNums', type=list, default=list(range(3, 7)),
+parser.add_argument('-an', '--angNums', type=str, default='3,4,5,6',
                     help="how many angles to be contained in one figure, so as the species of polygons.")
-parser.add_argument('-fr', '--floatRates', type=list, default=[0.05, 0.05],
+parser.add_argument('-fr', '--floatRates', type=str, default='0.05,0.05',
                     help="how much to float the center and angles in polygons.")
+parser.add_argument('-mt', '--maskType', type=str, default=None,
+                    choices=['vertex', 'edge', None],
+                    help="where to mask on polygons. Optional: vertex, edge or None(default)")
+parser.add_argument('-mr', '--maskRate', type=float, default=0,
+                    help="how much to mask on polygons. Default: 0.")
 parser.add_argument('-s', '--seed', type=int, default=1026,
                     help="random seed for generating polygons. Default: 1026.")
 args = parser.parse_args()
@@ -68,23 +99,27 @@ if __name__ == '__main__':
     thickness = args.thickness
     dataset = args.dataset
     figNum = args.figNum
-    angNums = args.angNums
     width = args.width
-    float_rate = args.floatRates
+    angNums = list(map(int, args.angNums.split(',')))
+    float_rate = list(map(float, args.floatRates.split(',')))
+    maskType = args.maskType
+    maskRate = args.maskRate
+
     # control random seed
     random.seed(args.seed)
     np.random.seed(args.seed)
     if fill:
-        ROOT = f'Datasets/polygons_filled_{width}_{thickness}/'
+        ROOT = f'Datasets/polygons_filled_{width}_{thickness}_{maskType}_{maskRate}/'
     else:
-        ROOT = f'Datasets/polygons_unfilled_{width}_{thickness}/'
+        ROOT = f'Datasets/polygons_unfilled_{width}_{thickness}_{maskType}_{maskRate}/'
     ROOT += dataset
     for angNum in tqdm(angNums):
         Path = os.path.join(ROOT, f'{angNum}')
         if not os.path.isdir(Path):
             os.makedirs(Path)
         for j in tqdm(range(figNum)):
-            point_list = points(angNum, width, float_rate=float_rate)
+            r, point_list = points(angNum, width, float_rate=float_rate)
             img = draw_polygon(point_list, fill, width, thickness)
+            draw_mask(img, fill, maskType, maskRate, r, point_list)
             img_address = os.path.join(Path, f"{angNum}_{j}.png")
             cv2.imwrite(img_address, img)

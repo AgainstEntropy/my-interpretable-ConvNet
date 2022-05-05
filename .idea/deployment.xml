@@ -1,15 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" autoUpload="Always" serverName="wangyh@49.234.47.191:22" remoteFilesAllowedToDisappearOnAutoupload="false">
+  <component name="PublishConfigData" autoUpload="Always" serverName="my@S-cluster" remoteFilesAllowedToDisappearOnAutoupload="false">
     <serverData>
-      <paths name="wangyh@49.234.47.191:22">
+      <paths name="my@S-cluster">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/cache_home/01-Projects/my" local="$PROJECT_DIR$" web="/" />
+          </mappings>
+          <excludedPaths>
+            <excludedPath local="true" path="$PROJECT_DIR$/Datasets" />
+            <excludedPath local="true" path="$PROJECT_DIR$/runs" />
+            <excludedPath local="true" path="$PROJECT_DIR$/tblogs" />
+          </excludedPaths>
+        </serverdata>
+      </paths>
+      <paths name="my@VM-0-2">
         <serverdata>
           <mappings>
             <mapping deploy="/01-Projects/03-my" local="$PROJECT_DIR$" web="/" />
           </mappings>
-          <excludedPaths>
-            <excludedPath path="/01-Projects/03-my/Datasets" />
-          </excludedPaths>
+        </serverdata>
+      </paths>
+      <paths name="wd-code@S-cluster">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
         </serverdata>
       </paths>
     </serverData>

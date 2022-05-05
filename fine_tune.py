@@ -3,28 +3,30 @@
 # @Author  : WangYihao
 # @File    : fine_tune.py
 
-from my_utils.utils import train_a_model
+from my_utils.train import train_a_model
 
 model_configs = {
-    'type': 'my_convnext',
-    'kernel_size': 9,
-    'depths': (1, 1, 1),
-    'dims': (4, 8, 16)
+    'type': 'simple_conv',
+    'kernel_size': 7,
+    'depths': (1, 2, 1),
+    'dims': (4, 8, 16),
+    'act': 'gelu',
+    'norm': 'BN'
 }
 train_configs = {
-    'log_dir': 'newruns',
+    'log_dir': 'finalruns',
     'dataset_dir': '/home/wangyh/01-Projects/03-my/Datasets/polygons_unfilled_64_3',
     'batch_size': 512,
-    'epochs': 140,
-    'device': 'cuda:7',
+    'epochs': 90,
+    'device': 'cuda:2',
     'optim': 'AdamW',
-    'lr': 1.3e-5,
+    'lr': 1.2e-4,
     'schedule': 'cosine_warm',
-    'cos_T': 50,
+    'cos_T': 25,
     'cos_mul': 2,
     'cos_iters': 2,
     'momentum': 0.9,
-    'weight_decay': 7e-4,
+    'weight_decay': 5e-3,
 }
 loader_kwargs = {
     'batch_size': train_configs['batch_size'],  # default:512

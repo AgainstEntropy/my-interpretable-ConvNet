@@ -11,13 +11,13 @@ import torch.nn.functional as F
 # from timm.models.layers import trunc_normal_, DropPath
 
 def create_model(type='simple_conv', kernel_size=3,
-                 depths=(1, 1, 1), dims=(4, 8, 16)):
+                 depths=(1, 1, 1), dims=(4, 8, 16), act='relu', norm='BN'):
     model_class = None
     if type == "simple_conv":
         model_class = simple_Conv
     elif type == "my_convnext":
         model_class = my_ConvNeXt
-    return model_class(kernel_size=kernel_size, depths=depths, dims=dims)
+    return model_class(kernel_size=kernel_size, depths=depths, dims=dims, act=act, norm=norm)
 
 
 class Block(nn.Module):
@@ -68,8 +68,8 @@ class my_ConvNeXt(nn.Module):
     """
 
     def __init__(self, in_chans=1, num_classes=4, kernel_size=3,
-                 depths=(1, 1, 1), dims=(4, 8, 16), drop_path_rate=0.,
-                 layer_scale_init_value=1e-2, head_init_scale=1.):
+                 depths=(1, 1, 1), dims=(4, 8, 16), act='relu', norm='BN',
+                 drop_path_rate=0., layer_scale_init_value=1e-2, head_init_scale=1.):
         super().__init__()
 
         self.num_layers = len(dims)
@@ -164,8 +164,8 @@ class my_ConvNeXt(nn.Module):
 
 class my_ConvNeXt_vis(my_ConvNeXt):
     def __init__(self, in_chans=1, num_classes=4, kernel_size=3,
-                 depths=(1, 1, 1), dims=(4, 8, 16), drop_path_rate=0.,
-                 layer_scale_init_value=1e-2, head_init_scale=1.):
+                 depths=(1, 1, 1), dims=(4, 8, 16), act='relu', norm='BN',
+                 drop_path_rate=0., layer_scale_init_value=1e-2, head_init_scale=1.):
         my_ConvNeXt.__init__(self, in_chans=in_chans, num_classes=num_classes, kernel_size=kernel_size,
                              depths=depths, dims=dims, drop_path_rate=drop_path_rate,
                              layer_scale_init_value=layer_scale_init_value, head_init_scale=head_init_scale)
@@ -201,23 +201,28 @@ class simple_Conv(nn.Module):
     """
 
     def __init__(self, in_chans=1, num_classes=4, kernel_size=3,
-                 depths=(1, 1, 1), dims=(4, 8, 16)):
+                 depths=(1, 1, 1), dims=(4, 8, 16), act='relu', norm='BN'):
         super().__init__()
 
         assert len(depths) == len(dims)
         self.num_layers = len(dims)
+        if act == 'relu':
+            self.act_layer = nn.ReLU()
+        elif act == 'gelu':
+            self.act_layer = nn.GELU()
 
         self.stages = nn.ModuleList()
-        start_layer = self.conv_block(in_chans, dims[0], act='relu')
+        start_layer = self.conv_block(in_chans, dims[0])
         self.stages.append(start_layer)
 
         for i in range(self.num_layers - 1):
             stage = nn.Sequential(
-                *[self.conv_block(dims[i], dims[i], kernel_size) for _ in range(depths[i] - 1)]
+                *[self.conv_block(dims[i], dims[i], kernel_size, norm) for _ in range(depths[i] - 1)]
             )
             self.stages.append(stage)
-            self.stages.append(self.conv_block(dims[i], dims[i + 1], kernel_size, act='relu'))
+            self.stages.append(self.conv_block(dims[i], dims[i + 1], kernel_size))
 
+        self.GAP = nn.AdaptiveAvgPool2d(output_size=(1, 1))
         self.head = nn.Linear(dims[-1], num_classes)
 
         self.apply(self._init_weights)
@@ -229,7 +234,7 @@ class simple_Conv(nn.Module):
             if m.bias is not None:
                 nn.init.constant_(m.bias, 0)
 
-    def conv_block(self, in_chans, out_chans, kernel_size=3, act=None):
+    def conv_block(self, in_chans, out_chans, kernel_size=7, norm='BN'):
         r"""
         Args:
             in_chans (int): Number of input image channels.
@@ -237,21 +242,19 @@ class simple_Conv(nn.Module):
             kernel_size (int): Kernel size of Conv layer. Default: 3
             act (str): Activation function. Select from 'relu' or 'gelu'. Default: None
         """
-        block = nn.Sequential(
-            nn.Conv2d(in_chans, out_chans, kernel_size, padding=1, bias=False),
-            nn.BatchNorm2d(out_chans),
-        )
-        if act is not None:
-            if act == 'relu':
-                block.add_module(f'relu-{out_chans}', nn.ReLU())
-            elif act == 'gelu':
-                block.add_module(f'gelu-{out_chans}', nn.GELU())
+        block = nn.Sequential(nn.Conv2d(in_chans, out_chans, kernel_size, padding='same', bias=False))
+        if norm == 'BN':
+            block.add_module(f'BN-{out_chans}', nn.BatchNorm2d(out_chans))
+        elif norm == 'LN':
+            block.add_module(f'LN-{out_chans}', nn.LayerNorm(out_chans))
+
         return block
 
     def forward(self, x):
         for stage in self.stages:
             x = stage(x)  # (N, C[i], H, W) -> (N, C[i+1], H, W)
-        x = x.mean([-2, -1])  # global average pooling, (N, C, H, W) -> (N, C)
+            x = self.act_layer(x)
+        x = self.GAP(x).squeeze()  # global average pooling, (N, C, H, W) -> (N, C)
         scores = self.head(x)
 
         return scores
@@ -259,9 +262,9 @@ class simple_Conv(nn.Module):
 
 class simple_Conv_vis(simple_Conv):
     def __init__(self, in_chans=1, num_classes=4, kernel_size=3,
-                 depths=(1, 1, 1), dims=(4, 8, 16)):
+                 depths=(1, 1, 1), dims=(4, 8, 16), act='relu'):
         simple_Conv.__init__(self, in_chans=in_chans, num_classes=num_classes, kernel_size=kernel_size,
-                             depths=depths, dims=dims)
+                             depths=depths, dims=dims, act=act)
         self.mid_outputs = None
 
     def forward(self, x):
@@ -271,11 +274,13 @@ class simple_Conv_vis(simple_Conv):
         for stage in self.stages:
             x = stage(x)  # (N, C[i], H, W) -> (N, C[i+1], H, W)
             mid = x.detach().cpu().squeeze()
-            for c in range(mid.size(0)):
-                mid[c] /= mid[c].max()
             self.mid_outputs.append(mid)
+            if self.act == 'relu':
+                x = nn.functional.relu(x, inplace=True)
+            elif self.act == 'gelu':
+                x = nn.functional.gelu(x)
 
-        x = x.mean([-2, -1])  # global average pooling, (N, C, H, W) -> (N, C)
+        x = self.GAP(x).squeeze()  # global average pooling, (N, C, H, W) -> (N, C)
         scores = self.head(x)
 
         return scores, self.mid_outputs
