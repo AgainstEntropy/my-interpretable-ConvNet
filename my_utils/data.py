@@ -33,19 +33,8 @@ class MyDataset(Dataset):
         return len(self.data)
 
 
-def make_datasets(dataset_dir, loader_kwargs, transform):
-    train_data = MyDataset(os.path.join(dataset_dir, 'train'), transform=transform)
-    train_loader = DataLoader(train_data, **loader_kwargs)
-    val_data = MyDataset(os.path.join(dataset_dir, 'val'), transform=transform)
-    val_loader = DataLoader(val_data, **loader_kwargs)
-    test_data = MyDataset(os.path.join(dataset_dir, 'test'), transform=transform)
-    test_loader = DataLoader(test_data, **loader_kwargs)
-
-    sample_step = 10
-    small_train_data = Subset(train_data, torch.arange(0, len(train_data) - 1, sample_step))
-    small_train_loader = DataLoader(small_train_data, **loader_kwargs)
-
-    check_loaders = {'train': small_train_loader,
-                     'val': val_loader}
-
-    return train_loader, test_loader, check_loaders
+def make_dataset(phase, dataset_dir, transform):
+    return MyDataset(
+        ROOT=os.path.join(dataset_dir, phase),
+        transform=transform
+    )

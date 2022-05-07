@@ -88,3 +88,26 @@ def check_accuracy(test_model, loader, training=False):
         return test_acc
     else:
         print(f"Test accuracy is : {100. * test_acc:.2f}%\tInfer time: {time.time() - tic}")
+
+
+class AverageMeter(object):
+    """Computes and stores the average and current value"""
+
+    def __init__(self):
+        self.reset()
+
+    def reset(self):
+        self.avg = -1
+        self.sum = 0
+        self.count = 0
+
+    def update(self, val, n=1):
+        self.sum += val * n
+        self.count += n
+        self.avg = self.sum / self.count
+
+
+def correct_rate(preds, labels):
+    assert len(preds) == len(labels)
+    num_correct = (preds == labels).sum()
+    return num_correct / len(preds)

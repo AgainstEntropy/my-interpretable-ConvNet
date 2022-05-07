@@ -225,6 +225,8 @@ class simple_Conv(nn.Module):
         self.GAP = nn.AdaptiveAvgPool2d(output_size=(1, 1))
         self.head = nn.Linear(dims[-1], num_classes)
 
+        self.loss_func = nn.CrossEntropyLoss()
+
         self.apply(self._init_weights)
 
     def _init_weights(self, m):
@@ -250,14 +252,18 @@ class simple_Conv(nn.Module):
 
         return block
 
-    def forward(self, x):
+    def forward(self, xx):
+        x, y = xx
         for stage in self.stages:
             x = stage(x)  # (N, C[i], H, W) -> (N, C[i+1], H, W)
             x = self.act_layer(x)
         x = self.GAP(x).squeeze()  # global average pooling, (N, C, H, W) -> (N, C)
-        scores = self.head(x)
+        scores = self.head(x)  # (N, C) -> (N, cls_num)
 
-        return scores
+        loss = self.loss_func(scores, y)
+        preds = scores.argmax(axis=1)
+
+        return loss, preds
 
 
 class simple_Conv_vis(simple_Conv):

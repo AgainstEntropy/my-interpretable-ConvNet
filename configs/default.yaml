@@ -1,0 +1,62 @@
+model_configs:
+  type: simple_conv
+  kernel_size: 7
+  depths:
+    - 1
+    - 2
+    - 1
+  dims:
+    - 4
+    - 8
+    - 16
+  act: relu
+  norm: BN
+
+dataset_configs:
+  # polygons_unfilled_64_3
+  mean: 0.1094
+  std: 0.3660
+  fig_resize: 64
+
+loader_kwargs:
+#  batch_size: 512
+#  shuffle: true
+  num_workers: 8
+  pin_memory: true
+#  drop_last: true
+  prefetch_factor: 8
+  persistent_workers: true
+
+train_configs:
+  dataset_dir: /home/wangyh/01-Projects/03-my/Datasets/polygons_unfilled_64_3
+  resume: false
+  resume_path: null
+  mode: train
+  batch_size: 512
+  seed: 1026
+  device: cuda:2
+  amp: true
+
+optim_kwargs:
+  optim_type: AdamW
+  lr: 1.2e-4
+  weight_decay: 5.0e-3
+
+schedule_configs:
+  schedule_type: cosine_warm
+  max_epoch: 90
+  cos_T: 25
+  cos_mul: 2
+  cos_iters: 2
+
+distributed_configs:
+  distributed: false
+  gpu_ids: 0,1
+  world_size: 1
+  local_rank: 0
+  port: 4250
+
+log_configs:
+  log_dir: test_runs
+  save_epoch_interval: 5
+  snapshot_interval: 100

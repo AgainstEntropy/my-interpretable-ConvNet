@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" autoUpload="Always" serverName="my@S-cluster" remoteFilesAllowedToDisappearOnAutoupload="false">
+  <component name="PublishConfigData" autoUpload="Always" serverName="my@VM-0-2" remoteFilesAllowedToDisappearOnAutoupload="false" showNewOnSourceInSync="false">
     <serverData>
+      <paths name="NLOS@S-cluster">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
       <paths name="my@S-cluster">
         <serverdata>
           <mappings>
@@ -18,6 +25,20 @@
         <serverdata>
           <mappings>
             <mapping deploy="/01-Projects/03-my" local="$PROJECT_DIR$" web="/" />
+          </mappings>
+          <excludedPaths>
+            <excludedPath local="true" path="$PROJECT_DIR$/runs" />
+            <excludedPath path="/01-Projects/03-my/newruns" />
+            <excludedPath path="/01-Projects/03-my/runs" />
+            <excludedPath path="/01-Projects/03-my/tblogs" />
+            <excludedPath local="true" path="$PROJECT_DIR$/tblogs" />
+          </excludedPaths>
+        </serverdata>
+      </paths>
+      <paths name="wangyihao@103.177.28.10:22 password">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/mnt/lustre/wangyihao/cache_home/01-Projects/my" local="$PROJECT_DIR$" />
           </mappings>
         </serverdata>
       </paths>
