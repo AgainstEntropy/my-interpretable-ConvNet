@@ -4,20 +4,17 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="580800dd-0704-442b-84fc-70e4e6e2cdce" name="Changes" comment="small fix">
-      <change afterPath="$PROJECT_DIR$/configs/default.yaml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test.py" afterDir="false" />
+    <list default="true" id="580800dd-0704-442b-84fc-70e4e6e2cdce" name="Changes" comment="complete code-base for one-node multi-GPU">
       <change beforePath="$PROJECT_DIR$/.idea/deployment.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/deployment.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/my-interpretable-ConvNeXt.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/my-interpretable-ConvNeXt.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fine_tune.py" beforeDir="false" afterPath="$PROJECT_DIR$/train.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/my_utils/data.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_utils/data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Generate_polygon.py" beforeDir="false" afterPath="$PROJECT_DIR$/Generate_polygon.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Generate_polygon.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Generate_polygon.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/my_utils/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_utils/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/my_utils/train.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_utils/trainer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my_utils/trainer.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_utils/trainer.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/my_utils/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_utils/utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/polygen_classify_cam.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/polygen_classify_cam.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/polygon_regression.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/test.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my_utils/vis.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_utils/vis.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/polygon_classify_vis.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/polygon_classify_vis.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/test.ipynb" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -52,23 +49,23 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "WebServerToolWindowFactoryState": "true",
-    "WebServerToolWindowPanel.toolwindow.highlight.mappings": "true",
-    "WebServerToolWindowPanel.toolwindow.highlight.symlinks": "true",
-    "WebServerToolWindowPanel.toolwindow.show.date": "false",
-    "WebServerToolWindowPanel.toolwindow.show.permissions": "false",
-    "WebServerToolWindowPanel.toolwindow.show.size": "false",
-    "credentialsType com.jetbrains.python.remote.PyCreateRemoteInterpreterDialog$PyCreateRemoteSdkForm": "Web Deployment",
-    "last_opened_file_path": "D:/Files/Fudan/毕设/my_codes/tblogs",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "settings.editor.selected.configurable": "org.jetbrains.plugins.notebooks.jupyter.connections.configuration.JupyterServerConfigurable"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowPanel.toolwindow.highlight.mappings&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowPanel.toolwindow.highlight.symlinks&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowPanel.toolwindow.show.date&quot;: &quot;false&quot;,
+    &quot;WebServerToolWindowPanel.toolwindow.show.permissions&quot;: &quot;false&quot;,
+    &quot;WebServerToolWindowPanel.toolwindow.show.size&quot;: &quot;false&quot;,
+    &quot;credentialsType com.jetbrains.python.remote.PyCreateRemoteInterpreterDialog$PyCreateRemoteSdkForm&quot;: &quot;Web Deployment&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/Files/Fudan/毕设/my_codes/tblogs&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
   }
-}]]></component>
+}</component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="SvnConfiguration">
     <configuration>C:\Users\AgainstEntropy\AppData\Roaming\Subversion</configuration>
@@ -123,7 +120,11 @@
       <workItem from="1651757137103" duration="15747000" />
       <workItem from="1651818586345" duration="1276000" />
       <workItem from="1651822989897" duration="1265000" />
-      <workItem from="1651845989161" duration="32878000" />
+      <workItem from="1651845989161" duration="34204000" />
+      <workItem from="1652001104112" duration="261000" />
+      <workItem from="1652016049006" duration="7718000" />
+      <workItem from="1652061127983" duration="1545000" />
+      <workItem from="1652106509441" duration="7854000" />
     </task>
     <task id="LOCAL-00001" summary="check cuda and cudnn version">
       <created>1646034019501</created>
@@ -272,7 +273,14 @@
       <option name="project" value="LOCAL" />
       <updated>1651720284984</updated>
     </task>
-    <option name="localTasksCounter" value="22" />
+    <task id="LOCAL-00022" summary="complete code-base for one-node multi-GPU">
+      <created>1651944762056</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1651944762056</updated>
+    </task>
+    <option name="localTasksCounter" value="23" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -310,6 +318,7 @@
     <MESSAGE value="vis for sim_cam" />
     <MESSAGE value="heatmap" />
     <MESSAGE value="small fix" />
-    <option name="LAST_COMMIT_MESSAGE" value="small fix" />
+    <MESSAGE value="complete code-base for one-node multi-GPU" />
+    <option name="LAST_COMMIT_MESSAGE" value="complete code-base for one-node multi-GPU" />
   </component>
 </project>

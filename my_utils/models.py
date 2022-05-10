@@ -162,35 +162,6 @@ class my_ConvNeXt(nn.Module):
         return x
 
 
-class my_ConvNeXt_vis(my_ConvNeXt):
-    def __init__(self, in_chans=1, num_classes=4, kernel_size=3,
-                 depths=(1, 1, 1), dims=(4, 8, 16), act='relu', norm='BN',
-                 drop_path_rate=0., layer_scale_init_value=1e-2, head_init_scale=1.):
-        my_ConvNeXt.__init__(self, in_chans=in_chans, num_classes=num_classes, kernel_size=kernel_size,
-                             depths=depths, dims=dims, drop_path_rate=drop_path_rate,
-                             layer_scale_init_value=layer_scale_init_value, head_init_scale=head_init_scale)
-        self.mid_outputs = None
-
-    def forward_features(self, x):
-        x = self.forward_1st_block(x)
-        self.mid_outputs.append(x.detach().cpu())
-        for block_idx in range(1, self.num_layers):
-            # x = self.downsample_layers[i](x)
-            x = self.forward_block(x, block_idx)
-            self.mid_outputs.append(x.detach().cpu())
-
-        x = x.mean([-2, -1])  # global average pooling, (N, C, H, W) -> (N, C)
-        return self.norm(x) if x.size(0) > 1 else x
-
-    def forward(self, x):
-        # save some median outputs when inferring
-        self.mid_outputs = []
-
-        x = self.forward_features(x)
-        x = self.head(x)
-        return x, self.mid_outputs
-
-
 class simple_Conv(nn.Module):
     r"""
     Args:
@@ -216,10 +187,10 @@ class simple_Conv(nn.Module):
         self.stages.append(start_layer)
 
         for i in range(self.num_layers - 1):
-            stage = nn.Sequential(
-                *[self.conv_block(dims[i], dims[i], kernel_size, norm) for _ in range(depths[i] - 1)]
-            )
-            self.stages.append(stage)
+            if depths[i] - 1 > 0:
+                self.stages.append(nn.Sequential(
+                    *[self.conv_block(dims[i], dims[i], kernel_size, norm) for _ in range(depths[i] - 1)]
+                ))
             self.stages.append(self.conv_block(dims[i], dims[i + 1], kernel_size))
 
         self.GAP = nn.AdaptiveAvgPool2d(output_size=(1, 1))
@@ -264,32 +235,6 @@ class simple_Conv(nn.Module):
         preds = scores.argmax(axis=1)
 
         return loss, preds
-
-
-class simple_Conv_vis(simple_Conv):
-    def __init__(self, in_chans=1, num_classes=4, kernel_size=3,
-                 depths=(1, 1, 1), dims=(4, 8, 16), act='relu'):
-        simple_Conv.__init__(self, in_chans=in_chans, num_classes=num_classes, kernel_size=kernel_size,
-                             depths=depths, dims=dims, act=act)
-        self.mid_outputs = None
-
-    def forward(self, x):
-        # save some median outputs when inferring
-        self.mid_outputs = []
-
-        for stage in self.stages:
-            x = stage(x)  # (N, C[i], H, W) -> (N, C[i+1], H, W)
-            mid = x.detach().cpu().squeeze()
-            self.mid_outputs.append(mid)
-            if self.act == 'relu':
-                x = nn.functional.relu(x, inplace=True)
-            elif self.act == 'gelu':
-                x = nn.functional.gelu(x)
-
-        x = self.GAP(x).squeeze()  # global average pooling, (N, C, H, W) -> (N, C)
-        scores = self.head(x)
-
-        return scores, self.mid_outputs
 
 
 class LayerNorm(nn.Module):

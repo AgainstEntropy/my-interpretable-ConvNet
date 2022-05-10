@@ -17,6 +17,17 @@ from my_utils import data, models
 from my_utils.models import create_model
 
 
+class Hook(object):
+    def __init__(self):
+        self.features_in = []
+        self.features_out = []
+
+    def __call__(self, module, fea_in, fea_out):
+        print("hooker working", self)
+        self.features_in.append(fea_in)
+        self.features_out.append(fea_out)
+
+
 def Conv_BN_Relu(in_channel, out_channel, kernel_size=(3, 3), stride=None):
     if stride is not None:
         conv_layer = nn.Conv2d(in_channel, out_channel, kernel_size, stride, bias=False)

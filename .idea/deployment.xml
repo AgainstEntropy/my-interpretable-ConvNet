@@ -18,6 +18,9 @@
             <excludedPath local="true" path="$PROJECT_DIR$/Datasets" />
             <excludedPath local="true" path="$PROJECT_DIR$/runs" />
             <excludedPath local="true" path="$PROJECT_DIR$/tblogs" />
+            <excludedPath path="/cache_home/01-Projects/my/test_runs" />
+            <excludedPath path="/cache_home/01-Projects/my/saved_models" />
+            <excludedPath path="/cache_home/01-Projects/my/Datasets" />
           </excludedPaths>
         </serverdata>
       </paths>
@@ -32,13 +35,14 @@
             <excludedPath path="/01-Projects/03-my/runs" />
             <excludedPath path="/01-Projects/03-my/tblogs" />
             <excludedPath local="true" path="$PROJECT_DIR$/tblogs" />
+            <excludedPath path="/01-Projects/03-my/Datasets" />
           </excludedPaths>
         </serverdata>
       </paths>
-      <paths name="wangyihao@103.177.28.10:22 password">
+      <paths name="wangyh@VM-0-2">
         <serverdata>
           <mappings>
-            <mapping deploy="/mnt/lustre/wangyihao/cache_home/01-Projects/my" local="$PROJECT_DIR$" />
+            <mapping local="$PROJECT_DIR$" web="/" />
           </mappings>
         </serverdata>
       </paths>

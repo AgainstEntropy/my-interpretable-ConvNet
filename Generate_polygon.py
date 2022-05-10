@@ -70,7 +70,7 @@ def draw_mask(img, fill, maskType, maskRate, r, point_list):
 
 parser = argparse.ArgumentParser(description='Generate some polygons.')
 parser.add_argument('-ds', '--dataset', type=str, required=True, default='train',
-                    choices=['train', 'valid', 'test'],
+                    choices=['train', 'val', 'test'],
                     help="the dataset you want to generate.")
 parser.add_argument('-fn', '--figNum', type=int, default=2000,
                     help="the number of pictures to generate. Default: 2000.")
@@ -85,8 +85,8 @@ parser.add_argument('-an', '--angNums', type=str, default='3,4,5,6',
                     help="how many angles to be contained in one figure, so as the species of polygons.")
 parser.add_argument('-fr', '--floatRates', type=str, default='0.05,0.05',
                     help="how much to float the center and angles in polygons.")
-parser.add_argument('-mt', '--maskType', type=str, default=None,
-                    choices=['vertex', 'edge', None],
+parser.add_argument('-mt', '--maskType', type=str, default='None',
+                    choices=['vertex', 'edge', 'None'],
                     help="where to mask on polygons. Optional: vertex, edge or None(default)")
 parser.add_argument('-mr', '--maskRate', type=float, default=0,
                     help="how much to mask on polygons. Default: 0.")
@@ -120,6 +120,7 @@ if __name__ == '__main__':
         for j in tqdm(range(figNum)):
             r, point_list = points(angNum, width, float_rate=float_rate)
             img = draw_polygon(point_list, fill, width, thickness)
-            draw_mask(img, fill, maskType, maskRate, r, point_list)
+            if maskType == 'None':
+                draw_mask(img, fill, maskType, maskRate, r, point_list)
             img_address = os.path.join(Path, f"{angNum}_{j}.png")
             cv2.imwrite(img_address, img)

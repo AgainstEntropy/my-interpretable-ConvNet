@@ -9,6 +9,7 @@ import time
 from decimal import Decimal
 
 import numpy as np
+import yaml
 from loguru import logger
 from prettytable import PrettyTable
 from tqdm import tqdm
@@ -58,6 +59,7 @@ def _set_seed(seed, deterministic=False):
 class Trainer(object):
     def __init__(self, cfg):
         tic = time.time()
+        self.cfg = cfg
         self.model_cfgs = cfg['model_configs']
         self.train_cfgs = cfg['train_configs']
         self.dataset_cfgs = cfg['dataset_configs']
@@ -91,6 +93,8 @@ class Trainer(object):
         os.makedirs(self.ckpt_dir, exist_ok=True)
         if self.dist_cfgs['local_rank'] == 0:
             self.writer = SummaryWriter(log_dir=self.log_dir)
+        with open(os.path.join(self.log_dir, 'configs.yaml'), 'w', encoding="utf-8") as f:
+            yaml.safe_dump(self.cfg, f, default_flow_style=False, allow_unicode=True)
 
         self.start_epoch = 0
         self.steps = 0
@@ -122,7 +126,7 @@ class Trainer(object):
             self.load_checkpoint(checkpoint_path)
 
         if self.dist_cfgs['local_rank'] == 0:
-            print(f"{time.time()-tic} sec are used to initialize a Trainer.")
+            print(f"{time.time() - tic} sec are used to initialize a Trainer.")
 
     def _build_model(self):
         self.model = create_model(**self.model_cfgs)
