@@ -38,4 +38,4 @@ class MySimCAM(MyGradCAM):
     def get_compose_weight(self,
                            acts: np.ndarray,
                            grads: np.ndarray) -> np.ndarray:
-        return (acts * grads).mean(axis=(-1, -2), keepdims=True)
+        return (acts * self.input_tensor.cpu().numpy()).mean(axis=(-1, -2), keepdims=True)

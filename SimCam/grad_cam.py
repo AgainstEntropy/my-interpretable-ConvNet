@@ -23,8 +23,6 @@ class MyGradCAM:
         if not use_cuda:
             self.model = self.model.cpu()
 
-        self._require_acts_and_grads()
-
     def compute_cam_map(self) -> np.ndarray:
         target_cls_score = self.forward()
         target_cls_score.backward()
@@ -32,15 +30,15 @@ class MyGradCAM:
         acts = self.act_hook.out_features[0].detach().cpu().numpy()
         grads = self.grad_hook.out_features[0][0].detach().cpu().numpy()
 
-        self.remove_handles()
-
         compose_weights = self.get_compose_weight(acts, grads)
-        null_cam_map = (acts * compose_weights).sum(axis=1)  # (N, C, H, W) -> (N, H, W)
+        null_cam_map = (acts * compose_weights).sum(axis=1).squeeze()  # (1, C, H, W) -> (H, W)
 
         # normalize cam_map to [0, 1]
         normalized_cam_map = (null_cam_map - null_cam_map.min()) / (null_cam_map.max() - null_cam_map.min())
 
-        return normalized_cam_map[0] if self.fig_num == 1 else normalized_cam_map
+        self.release()
+
+        return normalized_cam_map
 
     def get_compose_weight(self,
                            acts: np.ndarray,
@@ -60,9 +58,9 @@ class MyGradCAM:
             handle.remove()
 
     def forward(self):
-        scores = self.model(self.input_tensor)
+        scores = self.model(self.input_tensor)  # (N, C)
         if self.target_cls is None:
-            self.target_cls = scores.argmax(dim=-1)
+            self.target_cls = scores.argmax(dim=-1)  # (N, )
         else:
             assert self.target_cls < len(scores)
         return scores[self.target_cls]
@@ -75,5 +73,9 @@ class MyGradCAM:
         if self.use_cuda:
             device = get_device(self.model)
             self.input_tensor = self.input_tensor.to(device)
-        self.fig_num = self.input_tensor.size(0)
+        self._require_acts_and_grads()
         return self.compute_cam_map()
+
+    def release(self):
+        self.model.zero_grad()
+        self.remove_handles()
