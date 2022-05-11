@@ -6,16 +6,18 @@ model_configs:
     - 2
     - 1
   dims:
+    - 2
     - 4
     - 8
-    - 16
   act: relu
   norm: BN
+  use_GSP: false
 
 dataset_configs:
   # polygons_unfilled_64_3
   mean: 0.1094
   std: 0.3660
+  preprocess: false
   fig_resize: 64
 
 loader_kwargs:

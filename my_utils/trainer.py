@@ -25,7 +25,7 @@ from torchvision import transforms as T
 
 from my_utils import data
 from my_utils.models import create_model
-from my_utils.utils import AverageMeter, correct_rate
+from my_utils.utils import AverageMeter, correct_rate, Hook
 
 cudnn.benchmark = True
 
@@ -76,9 +76,9 @@ class Trainer(object):
                                            rank=self.dist_cfgs['local_rank'])
         _set_seed(self.train_cfgs['seed'] + self.dist_cfgs['local_rank'], deterministic=True)
         if torch.cuda.is_available():
-            self.device = torch.device(f'cuda:{self.dist_cfgs["local_rank"]}')
+            self.device = f'cuda:{self.dist_cfgs["local_rank"]}'
         else:
-            self.device = torch.device("cpu")
+            self.device = "cpu"
         self.dist_cfgs['device'] = self.device
 
         save_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
@@ -93,8 +93,8 @@ class Trainer(object):
         os.makedirs(self.ckpt_dir, exist_ok=True)
         if self.dist_cfgs['local_rank'] == 0:
             self.writer = SummaryWriter(log_dir=self.log_dir)
-        with open(os.path.join(self.log_dir, 'configs.yaml'), 'w', encoding="utf-8") as f:
-            yaml.safe_dump(self.cfg, f, default_flow_style=False, allow_unicode=True)
+            with open(os.path.join(self.log_dir, 'configs.yaml'), 'w', encoding="utf-8") as f:
+                yaml.safe_dump(self.cfg, f, default_flow_style=False, allow_unicode=True)
 
         self.start_epoch = 0
         self.steps = 0
@@ -133,14 +133,16 @@ class Trainer(object):
         self.model.to(self.device)
 
     def _load_dataset(self, phase='train'):
+        trans = T.Compose([
+                T.ToTensor(),
+                T.Resize((self.dataset_cfgs['fig_resize'],) * 2)
+            ])
+        if self.dataset_cfgs['preprocess']:
+            trans = T.Compose([trans, T.Normalize(self.dataset_cfgs['mean'], self.dataset_cfgs['std'])])
         dataset = data.make_dataset(
             phase=phase,
             dataset_dir=self.train_cfgs['dataset_dir'],
-            transform=T.Compose([
-                T.ToTensor(),
-                T.Resize((self.dataset_cfgs['fig_resize'],) * 2),
-                T.Normalize(self.dataset_cfgs['mean'], self.dataset_cfgs['std'])
-            ])
+            transform=trans
         )
 
         sampler = DistributedSampler(dataset, shuffle=True) \
@@ -318,6 +320,11 @@ class Trainer(object):
         for step in range(len_loader):
             try:
                 inputs, labels = next(iter_loader)
+                if step == len_loader-1 and not self.dist_cfgs['distributed'] and self.dist_cfgs['local_rank'] == 0:
+                    inputs_collector = inputs.clone()
+                    labels_collector = labels.clone()
+                    GAP_hook = Hook()
+                    hook_handle = self.model.GAP.register_forward_hook(GAP_hook)
             except Exception as e:
                 logger.critical(e)
                 continue
@@ -352,6 +359,16 @@ class Trainer(object):
                 pbar.update()
 
         if self.dist_cfgs['local_rank'] == 0:
+            if not self.dist_cfgs['distributed']:
+                embed_features = torch.cat(GAP_hook.out_features, dim=0)
+                self.writer.add_embedding(mat=embed_features,
+                                          metadata=labels_collector,
+                                          label_img=inputs_collector,
+                                          global_step=epoch,
+                                          tag='gap_embed')
+
+                hook_handle.remove()
+                del GAP_hook
             pbar.close()
 
             logger.info(

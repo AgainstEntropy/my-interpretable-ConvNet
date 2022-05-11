@@ -5,27 +5,37 @@
 import os
 import time
 
-import adabound
 import torch
-from torch import nn, optim
-from torch.utils.tensorboard import SummaryWriter
-from torchvision import transforms
-
-from openpyxl import load_workbook
-
-from my_utils import data, models
-from my_utils.models import create_model
+from torch import nn
 
 
 class Hook(object):
-    def __init__(self):
-        self.features_in = []
-        self.features_out = []
+    def __init__(self, record_in=False, record_out=True, verbose=False):
+        self.record_in = record_in
+        self.record_out = record_out
+        self.verbose = verbose
 
-    def __call__(self, module, fea_in, fea_out):
-        print("hooker working", self)
-        self.features_in.append(fea_in)
-        self.features_out.append(fea_out)
+        if record_in:
+            self.in_features = []
+        if record_out:
+            self.out_features = []
+
+    def __call__(self, module, in_fea, out_fea):
+        if self.verbose:
+            print("hooker working", self)
+        if self.record_in:
+            self.in_features.append(in_fea)
+        if self.record_out:
+            self.out_features.append(out_fea)
+
+
+class GAP(nn.Module):
+    def __init__(self):
+        super(GAP, self).__init__()
+        self.avg_pool = nn.AdaptiveAvgPool2d(output_size=(1, 1))
+
+    def forward(self, x):
+        return self.avg_pool(x).squeeze()  # (N, C, H, W) -> (N, C)
 
 
 def Conv_BN_Relu(in_channel, out_channel, kernel_size=(3, 3), stride=None):

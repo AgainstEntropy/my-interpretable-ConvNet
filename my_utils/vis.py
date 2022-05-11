@@ -95,7 +95,7 @@ def Vis_cam(loader, model, target_layers, img_num=8, mode="heatmap_only"):
     device = get_device(model)
     imgs, labels = next(iter(loader))
     input_tensors = imgs[:img_num].to(device)
-    labels = labels[:img_num]
+    labels = labels[:img_num].to(device)
 
     model.eval()
     scores = model(input_tensors)
@@ -115,7 +115,11 @@ def Vis_cam(loader, model, target_layers, img_num=8, mode="heatmap_only"):
         for row in range(1, 5):
             targets = [ClassifierOutputTarget(row - 1)]
             with GradCAM(model=model, target_layers=target_layers, use_cuda=True) as cam:
-                img_cam = cam(input_tensor=input_tensor, targets=targets)[0, :]
+                try:
+                    img_cam = cam(input_tensor=input_tensor, targets=targets)[0, :]
+                    print(img_cam.shape)
+                except Exception as e:
+                    print(e)
             if mode == "heatmap_only":
                 img_cam = cv2.applyColorMap(np.uint8(255 * img_cam), colormap=cv2.COLORMAP_JET)
             elif mode == "heatmap_on_img":

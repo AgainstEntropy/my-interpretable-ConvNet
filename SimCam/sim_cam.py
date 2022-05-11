@@ -2,14 +2,16 @@
 # @Date    : 2022/4/19 08:58
 # @Author  : WangYihao
 # @File    : simcam.py
-
+import numpy as np
+import torch
 from torchvision.transforms.functional import resize
 from matplotlib import pyplot as plt
 
 from .functional import adaptive_softmax, zoom_to_01
+from .grad_cam import MyGradCAM
 
 
-def SimCam(vis_model, imgs, layer=-1, softmax=True, normalize=True):
+def simple_SimCam(vis_model, imgs, layer=-1, softmax=True, normalize=True):
     scores, mid_outputs = vis_model(imgs)
 
     map_size = mid_outputs[layer].shape[-2:]
@@ -24,3 +26,16 @@ def SimCam(vis_model, imgs, layer=-1, softmax=True, normalize=True):
         sim_maps[i] = zoom_to_01(sim_map)
 
     return sim_maps
+
+
+class MySimCAM(MyGradCAM):
+    def __init__(self,
+                 model: torch.nn.Module,
+                 target_layer: torch.nn.Module,
+                 use_cuda: bool = True):
+        super().__init__(model, target_layer, use_cuda)
+
+    def get_compose_weight(self,
+                           acts: np.ndarray,
+                           grads: np.ndarray) -> np.ndarray:
+        return (acts * grads).mean(axis=(-1, -2), keepdims=True)

@@ -36,6 +36,8 @@
             <excludedPath path="/01-Projects/03-my/tblogs" />
             <excludedPath local="true" path="$PROJECT_DIR$/tblogs" />
             <excludedPath path="/01-Projects/03-my/Datasets" />
+            <excludedPath path="/01-Projects/03-my/finalruns" />
+            <excludedPath path="/01-Projects/03-my/test_runs" />
           </excludedPaths>
         </serverdata>
       </paths>

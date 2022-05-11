@@ -7,17 +7,19 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 
-
 # from timm.models.layers import trunc_normal_, DropPath
+from my_utils.utils import GAP
+
 
 def create_model(type='simple_conv', kernel_size=3,
-                 depths=(1, 1, 1), dims=(4, 8, 16), act='relu', norm='BN'):
+                 depths=(1, 1, 1), dims=(4, 8, 16), act='relu', norm='BN', use_GSP=False):
     model_class = None
     if type == "simple_conv":
         model_class = simple_Conv
     elif type == "my_convnext":
         model_class = my_ConvNeXt
-    return model_class(kernel_size=kernel_size, depths=depths, dims=dims, act=act, norm=norm)
+    return model_class(kernel_size=kernel_size, depths=depths, dims=dims,
+                       act=act, norm=norm, use_GSP=use_GSP)
 
 
 class Block(nn.Module):
@@ -68,7 +70,7 @@ class my_ConvNeXt(nn.Module):
     """
 
     def __init__(self, in_chans=1, num_classes=4, kernel_size=3,
-                 depths=(1, 1, 1), dims=(4, 8, 16), act='relu', norm='BN',
+                 depths=(1, 1, 1), dims=(4, 8, 16), act='relu', norm='BN', use_GSP=False,
                  drop_path_rate=0., layer_scale_init_value=1e-2, head_init_scale=1.):
         super().__init__()
 
@@ -171,8 +173,9 @@ class simple_Conv(nn.Module):
         dims (tuple(int)): Feature dimension at each stage. Default: (4, 8, 16)
     """
 
-    def __init__(self, in_chans=1, num_classes=4, kernel_size=3,
-                 depths=(1, 1, 1), dims=(4, 8, 16), act='relu', norm='BN'):
+    def __init__(self, in_chans=1, num_classes=4, kernel_size=7,
+                 depths=(1, 1, 1), dims=(2, 4, 8),
+                 act='relu', norm='BN', use_GSP=False):
         super().__init__()
 
         assert len(depths) == len(dims)
@@ -193,7 +196,8 @@ class simple_Conv(nn.Module):
                 ))
             self.stages.append(self.conv_block(dims[i], dims[i + 1], kernel_size))
 
-        self.GAP = nn.AdaptiveAvgPool2d(output_size=(1, 1))
+        self.use_GSP = use_GSP
+        self.GAP = GAP()
         self.head = nn.Linear(dims[-1], num_classes)
 
         self.loss_func = nn.CrossEntropyLoss()
@@ -224,17 +228,41 @@ class simple_Conv(nn.Module):
         return block
 
     def forward(self, xx):
-        x, y = xx
+        inputs, labels = xx
+        x = inputs.clone()
         for stage in self.stages:
             x = stage(x)  # (N, C[i], H, W) -> (N, C[i+1], H, W)
             x = self.act_layer(x)
-        x = self.GAP(x).squeeze()  # global average pooling, (N, C, H, W) -> (N, C)
+        if self.use_GSP:
+            x *= inputs
+        x = self.GAP(x)  # global average pooling, (N, C, H, W) -> (N, C)
         scores = self.head(x)  # (N, C) -> (N, cls_num)
 
-        loss = self.loss_func(scores, y)
+        loss = self.loss_func(scores, labels)
         preds = scores.argmax(axis=1)
 
         return loss, preds
+
+
+class cam_simple_Conv(simple_Conv):
+    def __init__(self, in_chans=1, num_classes=4, kernel_size=7,
+                 depths=(1, 1, 1), dims=(2, 4, 8),
+                 act='relu', norm='BN', use_GSP=False):
+        super().__init__(in_chans=in_chans, num_classes=num_classes, kernel_size=kernel_size,
+                 depths=depths, dims=dims,
+                 act=act, norm=norm, use_GSP=use_GSP)
+
+    def forward(self, inputs):
+        x = inputs.clone()
+        for stage in self.stages:
+            x = stage(x)  # (N, C[i], H, W) -> (N, C[i+1], H, W)
+            x = self.act_layer(x)
+        if self.use_GSP:
+            x *= inputs
+        x = self.GAP(x)  # global average pooling, (N, C, H, W) -> (N, C)
+        scores = self.head(x)  # (N, C) -> (N, cls_num)
+
+        return scores
 
 
 class LayerNorm(nn.Module):
