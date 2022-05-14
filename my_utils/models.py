@@ -12,7 +12,7 @@ from my_utils.utils import GAP
 
 
 def create_model(type='simple_conv', kernel_size=3,
-                 depths=(1, 1, 1), dims=(4, 8, 16), act='relu', norm='BN', use_GSP=False):
+                 depths=(1, 1, 1), dims=(2, 4, 8), act='relu', norm='BN', use_GSP=False):
     model_class = None
     if type == "simple_conv":
         model_class = simple_Conv
@@ -181,7 +181,7 @@ class simple_Conv(nn.Module):
         assert len(depths) == len(dims)
         self.num_layers = len(dims)
         if act == 'relu':
-            self.act_layer = nn.ReLU()
+            self.act_layer = nn.ReLU(inplace=False)
         elif act == 'gelu':
             self.act_layer = nn.GELU()
 
@@ -223,7 +223,7 @@ class simple_Conv(nn.Module):
         if norm == 'BN':
             block.add_module(f'BN-{out_chans}', nn.BatchNorm2d(out_chans))
         elif norm == 'LN':
-            block.add_module(f'LN-{out_chans}', nn.LayerNorm(out_chans))
+            block.add_module(f'LN-{out_chans}', LayerNorm(out_chans))
 
         return block
 
@@ -234,7 +234,7 @@ class simple_Conv(nn.Module):
             x = stage(x)  # (N, C[i], H, W) -> (N, C[i+1], H, W)
             x = self.act_layer(x)
         if self.use_GSP:
-            x *= inputs
+            x = x * inputs
         x = self.GAP(x)  # global average pooling, (N, C, H, W) -> (N, C)
         scores = self.head(x)  # (N, C) -> (N, cls_num)
 
@@ -258,7 +258,7 @@ class cam_simple_Conv(simple_Conv):
             x = stage(x)  # (N, C[i], H, W) -> (N, C[i+1], H, W)
             x = self.act_layer(x)
         if self.use_GSP:
-            x *= inputs
+            x = x * inputs
         x = self.GAP(x)  # global average pooling, (N, C, H, W) -> (N, C)
         scores = self.head(x)  # (N, C) -> (N, cls_num)
 
@@ -272,7 +272,7 @@ class LayerNorm(nn.Module):
     with shape (batch_size, channels, height, width).
     """
 
-    def __init__(self, normalized_shape, eps=1e-6, data_format="channels_last"):
+    def __init__(self, normalized_shape, eps=1e-6, data_format="channels_first"):
         super().__init__()
         self.weight = nn.Parameter(torch.ones(normalized_shape))
         self.bias = nn.Parameter(torch.zeros(normalized_shape))

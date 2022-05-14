@@ -9,6 +9,7 @@ import time
 from decimal import Decimal
 
 import numpy as np
+import wandb
 import yaml
 from loguru import logger
 from prettytable import PrettyTable
@@ -105,6 +106,16 @@ class Trainer(object):
                             'best_epoch': 0}
 
         self._build_model()
+        if self.dist_cfgs['distributed']:
+            self.model = nn.SyncBatchNorm.convert_sync_batchnorm(self.model)
+            self.model = DDP(self.model,
+                             device_ids=[self.dist_cfgs['local_rank']],
+                             output_device=self.dist_cfgs['local_rank'],
+                             find_unused_parameters=False)
+
+        if self.dist_cfgs['local_rank'] == 0:
+            self._init_wandb(project_name='my', run_name=save_time)
+
         if self.train_cfgs['mode'] == 'train':
             self.train_loader, self.train_sampler = self._load_dataset(phase='train')
             self.val_loader, self.val_sampler = self._load_dataset(phase='val')
@@ -112,13 +123,6 @@ class Trainer(object):
             self.test_loader, self.test_sampler = self._load_dataset(phase='test')
 
         self._load_optimizer()
-
-        if self.dist_cfgs['distributed']:
-            self.model = nn.SyncBatchNorm.convert_sync_batchnorm(self.model)
-            self.model = DDP(self.model,
-                             device_ids=[self.dist_cfgs['local_rank']],
-                             output_device=self.dist_cfgs['local_rank'],
-                             find_unused_parameters=False)
 
         if self.train_cfgs['resume']:
             checkpoint_path = self.train_cfgs['resume_path']
@@ -128,15 +132,32 @@ class Trainer(object):
         if self.dist_cfgs['local_rank'] == 0:
             print(f"{time.time() - tic} sec are used to initialize a Trainer.")
 
+    def _init_wandb(self, project_name, run_name):
+        wandb.init(project=project_name, entity="against-entropy", name=run_name, dir=self.log_dir,
+                   config={
+                       "kernel_size": self.model_cfgs['kernel_size'],
+                       "depths": self.model_cfgs['depths'],
+                       "dims": self.model_cfgs['dims'],
+                       "activation": self.model_cfgs['act'],
+                       "normalization": self.model_cfgs['norm'],
+                       "use_GSP": self.model_cfgs['use_GSP'],
+                       "batch_size": self.train_cfgs['batch_size'],
+                       "lr_backbone": self.optim_kwargs['lr'],
+                       "optimizer": self.optim_kwargs['optimizer'],
+                       "weight_decay": self.optim_kwargs['weight_decay'],
+                       # "epochs": self.schedule_cfgs['max_epoch'],
+                   })
+        wandb.watch(self.model)
+
     def _build_model(self):
         self.model = create_model(**self.model_cfgs)
         self.model.to(self.device)
 
     def _load_dataset(self, phase='train'):
         trans = T.Compose([
-                T.ToTensor(),
-                T.Resize((self.dataset_cfgs['fig_resize'],) * 2)
-            ])
+            T.ToTensor(),
+            T.Resize((self.dataset_cfgs['fig_resize'],) * 2)
+        ])
         if self.dataset_cfgs['preprocess']:
             trans = T.Compose([trans, T.Normalize(self.dataset_cfgs['mean'], self.dataset_cfgs['std'])])
         dataset = data.make_dataset(
@@ -158,7 +179,7 @@ class Trainer(object):
 
     def _load_optimizer(self):
         base_optimizer = None
-        optim_type = self.optim_kwargs.pop('optim_type')
+        optim_type = self.optim_kwargs.pop('optimizer')
         if optim_type == 'SGD':
             base_optimizer = optim.SGD
             self.optim_kwargs['momentum'] = 0.9
@@ -213,9 +234,18 @@ class Trainer(object):
                     self.writer.add_scalar(tag=f'optimizer/lr_group_{i}',
                                            scalar_value=param_group['lr'],
                                            global_step=epoch)
+                    wandb.log({f"optimizer/lr_group_{i}": param_group['lr']})
 
                 self.writer.add_scalars('Metric/acc', {'train': train_acc, 'val': val_acc}, epoch + 1)
                 self.writer.add_scalars('Metric/loss', {'train': train_loss, 'val': val_loss}, epoch + 1)
+
+                wandb.log({
+                    'Metric/acc/train': train_acc,
+                    'Metric/acc/val': val_acc,
+                    'Metric/acc/best_acc': self.val_metrics['best_acc'],
+                    'Metric/loss/train': train_loss,
+                    'Metric/loss/val': val_loss
+                })
 
             self.scheduler.step()
 
@@ -320,14 +350,15 @@ class Trainer(object):
         for step in range(len_loader):
             try:
                 inputs, labels = next(iter_loader)
-                if step == len_loader-1 and not self.dist_cfgs['distributed'] and self.dist_cfgs['local_rank'] == 0:
-                    inputs_collector = inputs.clone()
-                    labels_collector = labels.clone()
-                    GAP_hook = Hook()
-                    hook_handle = self.model.GAP.register_forward_hook(GAP_hook)
             except Exception as e:
                 logger.critical(e)
                 continue
+            if not self.dist_cfgs['distributed'] and self.dist_cfgs['local_rank'] == 0 \
+                    and epoch % 10 == 0 and step == len_loader - 1:
+                inputs_collector = inputs.clone()
+                labels_collector = labels.clone()
+                GAP_hook = Hook()
+                hook_handle = self.model.GAP.register_forward_hook(GAP_hook)
 
             inputs = inputs.to(self.device)
             labels = labels.to(self.device)
@@ -359,7 +390,7 @@ class Trainer(object):
                 pbar.update()
 
         if self.dist_cfgs['local_rank'] == 0:
-            if not self.dist_cfgs['distributed']:
+            if not self.dist_cfgs['distributed'] and epoch % 10 == 0:
                 embed_features = torch.cat(GAP_hook.out_features, dim=0)
                 self.writer.add_embedding(mat=embed_features,
                                           metadata=labels_collector,

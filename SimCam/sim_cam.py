@@ -35,7 +35,12 @@ class MySimCAM(MyGradCAM):
                  use_cuda: bool = True):
         super().__init__(model, target_layer, use_cuda)
 
-    def get_compose_weight(self,
-                           acts: np.ndarray,
-                           grads: np.ndarray) -> np.ndarray:
-        return (acts * self.input_tensor.cpu().numpy()).mean(axis=(-1, -2), keepdims=True)
+    def get_compose_weight(self) -> np.ndarray:
+        # return (self.acts * self.input_tensor.cpu().numpy()).mean(axis=(-1, -2), keepdims=True)
+        # return (self.acts * self.grads).mean(axis=(-1, -2), keepdims=True)
+        return (self.acts * self.grads * self.input_tensor.cpu().numpy()).mean(axis=(-1, -2), keepdims=True)
+
+        # return self.acts.mean(axis=(-1, -2), keepdims=True)
+
+    def compose(self, compose_weights):
+        return (self.acts * self.grads * compose_weights).sum(axis=1).squeeze()  # (1, C, H, W) -> (H, W)

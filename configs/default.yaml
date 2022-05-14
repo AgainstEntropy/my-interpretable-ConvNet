@@ -40,7 +40,7 @@ train_configs:
   amp: true
 
 optim_kwargs:
-  optim_type: AdamW
+  optimizer: AdamW
   lr: 1.2e-4
   weight_decay: 5.0e-3
 

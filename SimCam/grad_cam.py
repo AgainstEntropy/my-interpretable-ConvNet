@@ -2,7 +2,7 @@
 # @Date    : 2022/5/11 15:32
 # @Author  : WangYihao
 # @File    : GradCam.py
-from typing import List
+from typing import List, Union, Tuple
 
 import numpy as np
 import torch
@@ -23,27 +23,28 @@ class MyGradCAM:
         if not use_cuda:
             self.model = self.model.cpu()
 
-    def compute_cam_map(self) -> np.ndarray:
-        target_cls_score = self.forward()
+    def compute_cam_map(self) -> Tuple[int, np.ndarray]:
+        pred_cls, target_cls_score = self.forward()
         target_cls_score.backward()
 
-        acts = self.act_hook.out_features[0].detach().cpu().numpy()
-        grads = self.grad_hook.out_features[0][0].detach().cpu().numpy()
+        self.acts = self.act_hook.out_features[0].detach().cpu().numpy()
+        self.grads = self.grad_hook.out_features[0][0].detach().cpu().numpy()
 
-        compose_weights = self.get_compose_weight(acts, grads)
-        null_cam_map = (acts * compose_weights).sum(axis=1).squeeze()  # (1, C, H, W) -> (H, W)
+        compose_weights = self.get_compose_weight()
+        null_cam_map = self.compose(compose_weights)
 
         # normalize cam_map to [0, 1]
         normalized_cam_map = (null_cam_map - null_cam_map.min()) / (null_cam_map.max() - null_cam_map.min())
 
         self.release()
 
-        return normalized_cam_map
+        return pred_cls, normalized_cam_map
 
-    def get_compose_weight(self,
-                           acts: np.ndarray,
-                           grads: np.ndarray) -> np.ndarray:
-        return grads.mean(axis=(-1, -2), keepdims=True)
+    def get_compose_weight(self) -> np.ndarray:
+        return self.grads.mean(axis=(-1, -2), keepdims=True)
+
+    def compose(self, compose_weights):
+        return (self.acts * compose_weights).sum(axis=1).squeeze()  # (1, C, H, W) -> (H, W)
 
     def _require_acts_and_grads(self):
         self.act_hook = Hook()
@@ -58,12 +59,13 @@ class MyGradCAM:
             handle.remove()
 
     def forward(self):
-        scores = self.model(self.input_tensor)  # (N, C)
+        scores = self.model(self.input_tensor)  # (1, C)
+        pred_cls = scores.argmax(dim=-1)
         if self.target_cls is None:
-            self.target_cls = scores.argmax(dim=-1)  # (N, )
+            self.target_cls = pred_cls  # (1, )
         else:
             assert self.target_cls < len(scores)
-        return scores[self.target_cls]
+        return pred_cls, scores[self.target_cls]
 
     def __call__(self,
                  input_tensor: torch.Tensor,

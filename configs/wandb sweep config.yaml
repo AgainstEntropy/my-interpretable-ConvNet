@@ -1,0 +1,63 @@
+name: test relu
+method: bayes
+command:
+  - python
+  - ${program}
+  - "--gpu_ids=4"
+  - ${args}
+program: train.py
+metric:
+  goal: maximize
+  name: best_acc
+parameters:
+  kernel_size:
+    distribution: categorical
+    values:
+      - 3
+      - 5
+      - 7
+      - 9
+      - 11
+
+  normalization:
+    distribution: categorical
+    values:
+      - BN
+      - LN
+
+  activation:
+    distribution: categorical
+    values:
+      - relu
+#      - gelu
+
+  use_GSP:
+    distribution: categorical
+    values:
+      - false
+      - true
+
+  lr_backbone:
+    distribution: log_uniform_values
+    min: 1e-4
+    max: 3.5e-4
+
+  weight_decay:
+    distribution: log_uniform_values
+    min: 5e-3
+    max: 5e-2
+
+  batch_size:
+    distribution: categorical
+    values:
+      - 64
+      - 128
+      - 256
+      - 512
+
+  optimizer:
+    distribution: categorical
+    values:
+      - SGD
+      - Adam
+      - AdamW
