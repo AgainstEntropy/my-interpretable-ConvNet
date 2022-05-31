@@ -47,7 +47,7 @@ if __name__ == '__main__':
     parser.add_argument('-norm', '--normalization', type=str, choices=['BN', 'LN'], default='BN')
     parser.add_argument('-gsp', '--use_GSP', type=bool, default=False)
 
-    parser.add_argument('-b', '--batch_size', type=int, default=1024)
+    parser.add_argument('-b', '--batch_size', type=int, default=256)
     parser.add_argument('-op', '--optimizer', type=str, choices=['SGD', 'Adam', 'AdamW'], default='AdamW')
     parser.add_argument('-lr_b', '--lr_backbone', type=float, default=2.5e-4)
     parser.add_argument('-wd', '--weight_decay', type=float, default=5.0e-3)

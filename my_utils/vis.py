@@ -178,16 +178,31 @@ def Vis_pca(dim=2,
     plt.show()
 
 
-def vis_4D(data, figsize_factor=2, cmap='viridis'):
+def vis_4D(data, figsize_factor=2, cmap='viridis', return_fig_array=False):
     """
     Visualize a 4D tensor with shape (N, C, H, W) using N rows and C columns.
     """
     assert len(data.shape) == 4
     row_num, col_num = data.shape[:2]
-    plt.figure(figsize=(col_num * figsize_factor, row_num * figsize_factor))
+    fig = plt.figure(figsize=(col_num * figsize_factor, row_num * figsize_factor))
     for idx, filer in enumerate(data.reshape((-1, *data.shape[2:]))):
         plt.subplot(row_num, col_num, idx + 1)
         plt.axis('off')
         plt.imshow(filer, cmap=cmap)
+    # plt.tight_layout()
 
-    plt.show()
+    if return_fig_array:
+        from PIL import Image
+
+        fig.canvas.draw()
+
+        w, h = fig.canvas.get_width_height()
+        buf = np.fromstring(fig.canvas.tostring_argb(), dtype=np.uint8)
+        buf.shape = (w, h, 4)
+        buf = np.roll(buf, 3, axis=2)
+
+        image_array = Image.frombytes("RGBA", (w, h), buf.tostring())
+        image_array = np.asarray(image_array)
+        return image_array
+    else:
+        plt.show()

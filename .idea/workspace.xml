@@ -4,14 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="580800dd-0704-442b-84fc-70e4e6e2cdce" name="Changes" comment="bug fix">
-      <change afterPath="$PROJECT_DIR$/configs/wandb sweep config.yaml" afterDir="false" />
+    <list default="true" id="580800dd-0704-442b-84fc-70e4e6e2cdce" name="Changes" comment="bug fix: inplace operation">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/SimCam/grad_cam.py" beforeDir="false" afterPath="$PROJECT_DIR$/SimCam/grad_cam.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/SimCam/sim_cam.py" beforeDir="false" afterPath="$PROJECT_DIR$/SimCam/sim_cam.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/configs/default.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/default.yaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/my_utils/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_utils/models.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/my_utils/trainer.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_utils/trainer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my_utils/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_utils/utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my_utils/vis.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_utils/vis.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/polygen_classify_cam.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/polygen_classify_cam.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/polygon_classify_vis.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/polygon_classify_vis.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/train.py" beforeDir="false" afterPath="$PROJECT_DIR$/train.py" afterDir="false" />
@@ -49,23 +47,23 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowPanel.toolwindow.highlight.mappings&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowPanel.toolwindow.highlight.symlinks&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowPanel.toolwindow.show.date&quot;: &quot;false&quot;,
-    &quot;WebServerToolWindowPanel.toolwindow.show.permissions&quot;: &quot;false&quot;,
-    &quot;WebServerToolWindowPanel.toolwindow.show.size&quot;: &quot;false&quot;,
-    &quot;credentialsType com.jetbrains.python.remote.PyCreateRemoteInterpreterDialog$PyCreateRemoteSdkForm&quot;: &quot;Web Deployment&quot;,
-    &quot;last_opened_file_path&quot;: &quot;D:/Files/Fudan/毕设/毕业论文&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "WebServerToolWindowFactoryState": "true",
+    "WebServerToolWindowPanel.toolwindow.highlight.mappings": "true",
+    "WebServerToolWindowPanel.toolwindow.highlight.symlinks": "true",
+    "WebServerToolWindowPanel.toolwindow.show.date": "false",
+    "WebServerToolWindowPanel.toolwindow.show.permissions": "false",
+    "WebServerToolWindowPanel.toolwindow.show.size": "false",
+    "credentialsType com.jetbrains.python.remote.PyCreateRemoteInterpreterDialog$PyCreateRemoteSdkForm": "Web Deployment",
+    "last_opened_file_path": "D:/Files/Fudan/毕设/记录",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "settings.editor.selected.configurable": "org.jetbrains.plugins.notebooks.jupyter.connections.configuration.JupyterServerConfigurable"
   }
-}</component>
+}]]></component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="SvnConfiguration">
     <configuration>C:\Users\AgainstEntropy\AppData\Roaming\Subversion</configuration>
@@ -126,7 +124,16 @@
       <workItem from="1652061127983" duration="1545000" />
       <workItem from="1652106509441" duration="55007000" />
       <workItem from="1652323649942" duration="3050000" />
-      <workItem from="1652430636807" duration="18689000" />
+      <workItem from="1652430636807" duration="22949000" />
+      <workItem from="1652605082728" duration="1253000" />
+      <workItem from="1652948366356" duration="2663000" />
+      <workItem from="1653018882751" duration="1019000" />
+      <workItem from="1653059094353" duration="736000" />
+      <workItem from="1653143821589" duration="3927000" />
+      <workItem from="1653308368487" duration="624000" />
+      <workItem from="1653386339882" duration="1639000" />
+      <workItem from="1653634981536" duration="643000" />
+      <workItem from="1654005681813" duration="8374000" />
     </task>
     <task id="LOCAL-00001" summary="check cuda and cudnn version">
       <created>1646034019501</created>
@@ -303,7 +310,14 @@
       <option name="project" value="LOCAL" />
       <updated>1652280854647</updated>
     </task>
-    <option name="localTasksCounter" value="26" />
+    <task id="LOCAL-00026" summary="bug fix: inplace operation">
+      <created>1652515412991</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1652515412991</updated>
+    </task>
+    <option name="localTasksCounter" value="27" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -345,6 +359,7 @@
     <MESSAGE value="test Hook" />
     <MESSAGE value="complete GradCam and SimCam" />
     <MESSAGE value="bug fix" />
-    <option name="LAST_COMMIT_MESSAGE" value="bug fix" />
+    <MESSAGE value="bug fix: inplace operation" />
+    <option name="LAST_COMMIT_MESSAGE" value="bug fix: inplace operation" />
   </component>
 </project>

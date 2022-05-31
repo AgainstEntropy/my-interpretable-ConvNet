@@ -5,6 +5,7 @@
 import os
 import time
 
+import numpy as np
 import torch
 from torch import nn
 
@@ -91,9 +92,8 @@ def get_device(model):
     return next(model.parameters()).device
 
 
-def check_accuracy(test_model, loader, training=False):
-    num_correct = 0
-    num_samples = 0
+def check_accuracy(test_model, loader, training=False, cls_num=4):
+    confusion_matrix = np.zeros((cls_num,) * 2)
     device = get_device(test_model)
     test_model.eval()  # set model to evaluation mode
     tic = time.time()
@@ -101,14 +101,16 @@ def check_accuracy(test_model, loader, training=False):
         for batch_idx, (X, Y) in enumerate(loader):
             X = X.to(device, dtype=torch.float32)  # move to device, e.g. GPU
             Y = Y.to(device, dtype=torch.int)
-            scores = test_model(X)
-            num_correct += (scores.argmax(axis=1) == Y).sum()
-            num_samples += len(scores)
-    test_acc = float(num_correct) / num_samples
+            _, preds = test_model((X, Y))
+            for label, pred in zip(Y, preds):
+                confusion_matrix[label, pred] += 1
+    num_correct = confusion_matrix.trace()
+    test_acc = float(num_correct) / confusion_matrix.sum()
     if training:
         return test_acc
     else:
         print(f"Test accuracy is : {100. * test_acc:.2f}%\tInfer time: {time.time() - tic}")
+        return confusion_matrix
 
 
 class AverageMeter(object):
@@ -132,3 +134,31 @@ def correct_rate(preds, labels):
     assert len(preds) == len(labels)
     num_correct = (preds == labels).sum()
     return num_correct / len(preds)
+
+
+def nested_children(m: torch.nn.Module):
+    children = dict(m.named_children())
+    output = {}
+    if children == {}:
+        # if module has no children; m is last child! :O
+        return m
+    else:
+        # look for children from children... to the last child!
+        for name, child in children.items():
+            try:
+                output[name] = nested_children(child)
+            except TypeError:
+                output[name] = nested_children(child)
+    return output
+
+
+def get_conv_weights(model: torch.nn.Module):
+    kernels = []
+    children = dict(model.named_children())
+    if children == {}:
+        if isinstance(model, nn.Conv2d):
+            return [model.weight.detach().cpu().numpy().transpose((1, 0, 2, 3))]
+    else:
+        for name, child in children.items():
+            kernels.extend(get_conv_weights(child))
+    return kernels
