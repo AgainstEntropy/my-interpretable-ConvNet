@@ -48,11 +48,13 @@ if __name__ == '__main__':
     parser.add_argument('-gsp', '--use_GSP', type=bool, default=False)
 
     parser.add_argument('-b', '--batch_size', type=int, default=256)
+    parser.add_argument('-r', '--resume', action='store_true', help='load previously saved checkpoint')
+    parser.add_argument('-pjn', '--pj_name', type=str, default='my')
+
     parser.add_argument('-op', '--optimizer', type=str, choices=['SGD', 'Adam', 'AdamW'], default='AdamW')
     parser.add_argument('-lr_b', '--lr_backbone', type=float, default=2.5e-4)
     parser.add_argument('-wd', '--weight_decay', type=float, default=5.0e-3)
 
-    parser.add_argument('-r', '--resume', action='store_true', help='load previously saved checkpoint')
     parser.add_argument('-log', '--log_dir', type=str, default='test_runs', help='where to log train results')
     parser.add_argument('-g', '--gpu_ids', type=lambda x: x.replace(" ", ""), default='0,1', help='available gpu ids')
     parser.add_argument('--port', type=str, default='4250', help='port number of distributed init')
@@ -68,6 +70,7 @@ if __name__ == '__main__':
 
     config['train_configs']['batch_size'] = args.batch_size
     config['train_configs']['resume'] = args.resume
+    config['train_configs']['project_name'] = args.pj_name
 
     config['optim_kwargs']['optimizer'] = args.optimizer
     config['optim_kwargs']['lr'] = args.lr_backbone

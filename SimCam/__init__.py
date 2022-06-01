@@ -3,4 +3,4 @@
 # @Author  : WangYihao
 # @File    : __init__.py.py
 
-from SimCam.sim_cam import simple_SimCam
+from SimCam.sim_cam import MySimCAM

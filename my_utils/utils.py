@@ -7,7 +7,10 @@ import time
 
 import numpy as np
 import torch
+import yaml
 from torch import nn
+
+from my_utils.models import create_model
 
 
 class Hook(object):
@@ -28,15 +31,6 @@ class Hook(object):
             self.in_features.append(in_fea)
         if self.record_out:
             self.out_features.append(out_fea)
-
-
-class GAP(nn.Module):
-    def __init__(self):
-        super(GAP, self).__init__()
-        self.avg_pool = nn.AdaptiveAvgPool2d(output_size=(1, 1))
-
-    def forward(self, x):
-        return self.avg_pool(x).squeeze()  # (N, C, H, W) -> (N, C)
 
 
 def Conv_BN_Relu(in_channel, out_channel, kernel_size=(3, 3), stride=None):
@@ -162,3 +156,44 @@ def get_conv_weights(model: torch.nn.Module):
         for name, child in children.items():
             kernels.extend(get_conv_weights(child))
     return kernels
+
+
+def load_model(run_name: str,
+               log_root: str = '/home/wangyh/01-Projects/03-my/test_logs',
+               ckpt_name: str = 'best') -> torch.nn.Module:
+    """
+
+    Args:
+        run_name (str): distinguish a specific run, use run time for general cases.
+        log_root (str):
+        ckpt_name (str): 'best' or 'epoch_n', where 'n' is a multiple of 5.
+
+    """
+    run_dir = os.path.join(log_root, run_name)
+    with open(os.path.join(run_dir, 'configs.yaml'), 'r') as stream:
+        run_config = yaml.load(stream, Loader=yaml.FullLoader)
+
+    checkpoint = torch.load(os.path.join(run_dir, f'checkpoints/{ckpt_name}.pth'))
+    print('best val acc is:', checkpoint['best_val_acc'].item())
+
+    model = create_model(**run_config['model_configs'])
+    new_state_dict = {k.replace('module.', ''): v for k, v in checkpoint['model'].items()}
+    model.load_state_dict(new_state_dict)
+    print('Successfully load model parameters!')
+
+    return model
+
+
+def fig2array(fig):
+    from PIL import Image
+
+    fig.canvas.draw()
+
+    w, h = fig.canvas.get_width_height()
+    buf = np.fromstring(fig.canvas.tostring_argb(), dtype=np.uint8)
+    buf.shape = (w, h, 4)
+    buf = np.roll(buf, 3, axis=2)
+
+    image_array = Image.frombytes("RGBA", (w, h), buf.tostring())
+    image_array = np.asarray(image_array)
+    return image_array

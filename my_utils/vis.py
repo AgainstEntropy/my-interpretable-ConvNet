@@ -14,7 +14,7 @@ from torch.utils.data import DataLoader
 from torchvision import transforms
 
 from . import data
-from .utils import get_device
+from .utils import get_device, fig2array
 
 from pytorch_grad_cam import GradCAM
 from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
@@ -169,7 +169,7 @@ def Vis_pca(dim=2,
     for i in range(4):
         ax1.scatter(*[x[labels == i, _] for _ in range(dim)], label=f'{i + 3}')
         if dim == 2:
-            ax2.scatter(*[x[labels == 3-i, _] for _ in range(dim)], label=f'{6 - i}', c=color_list[3-i])
+            ax2.scatter(*[x[labels == 3 - i, _] for _ in range(dim)], label=f'{6 - i}', c=color_list[3 - i])
     ax1.legend(title='edges #', loc='best')
     if dim == 2:
         handles, labels = ax2.get_legend_handles_labels()
@@ -178,31 +178,50 @@ def Vis_pca(dim=2,
     plt.show()
 
 
-def vis_4D(data, figsize_factor=2, cmap='viridis', return_fig_array=False):
+def vis_4D(data, title: str, figsize_factor=2, cmap='viridis', return_mode=None):
     """
     Visualize a 4D tensor with shape (N, C, H, W) using N rows and C columns.
     """
     assert len(data.shape) == 4
     row_num, col_num = data.shape[:2]
     fig = plt.figure(figsize=(col_num * figsize_factor, row_num * figsize_factor))
+    # TODO:
+    fig.suptitle(title, fontsize=16)
+    plt.subplots_adjust(left=0, bottom=0, right=1, top=1, hspace=0.1, wspace=0.1)
     for idx, filer in enumerate(data.reshape((-1, *data.shape[2:]))):
         plt.subplot(row_num, col_num, idx + 1)
         plt.axis('off')
         plt.imshow(filer, cmap=cmap)
-    # plt.tight_layout()
 
-    if return_fig_array:
-        from PIL import Image
-
-        fig.canvas.draw()
-
-        w, h = fig.canvas.get_width_height()
-        buf = np.fromstring(fig.canvas.tostring_argb(), dtype=np.uint8)
-        buf.shape = (w, h, 4)
-        buf = np.roll(buf, 3, axis=2)
-
-        image_array = Image.frombytes("RGBA", (w, h), buf.tostring())
-        image_array = np.asarray(image_array)
-        return image_array
-    else:
+    if return_mode is None:
         plt.show()
+    elif return_mode == 'plt_fig':
+        return fig
+    elif return_mode == 'fig_array':
+        return fig2array(fig)
+
+
+def sim_matrix(data: np.ndarray, title: str,
+               cmap: str = 'viridis', return_mode=None):
+    """
+        Visualize a similarity matrix of given (N, D, ...) array.
+    """
+    size = data.shape[0]
+    matrix = np.zeros((size,) * 2)
+    for h in range(size):
+        for w in range(size):
+            matrix[h, w] = np.sum(data[h] * data[w])
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    im = ax.imshow(matrix, cmap=cmap)
+    plt.colorbar(im)
+    plt.axis('off')
+    plt.title(title)
+
+    if return_mode is None:
+        plt.show()
+    elif return_mode == 'plt_fig':
+        return fig
+    elif return_mode == 'fig_array':
+        return fig2array(fig)

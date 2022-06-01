@@ -4,14 +4,16 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="580800dd-0704-442b-84fc-70e4e6e2cdce" name="Changes" comment="bug fix: inplace operation">
+    <list default="true" id="580800dd-0704-442b-84fc-70e4e6e2cdce" name="Changes" comment="wandb log images">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SimCam/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/SimCam/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SimCam/sim_cam.py" beforeDir="false" afterPath="$PROJECT_DIR$/SimCam/sim_cam.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/default.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/default.yaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/my_utils/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_utils/models.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/my_utils/trainer.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_utils/trainer.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/my_utils/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_utils/utils.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/my_utils/vis.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_utils/vis.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/polygen_classify_cam.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/polygen_classify_cam.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/polygon_classify_vis.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/polygon_classify_vis.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/test.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/train.py" beforeDir="false" afterPath="$PROJECT_DIR$/train.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -56,7 +58,7 @@
     "WebServerToolWindowPanel.toolwindow.show.permissions": "false",
     "WebServerToolWindowPanel.toolwindow.show.size": "false",
     "credentialsType com.jetbrains.python.remote.PyCreateRemoteInterpreterDialog$PyCreateRemoteSdkForm": "Web Deployment",
-    "last_opened_file_path": "D:/Files/Fudan/毕设/记录",
+    "last_opened_file_path": "D:/Files/Fudan/毕设/记录/output.png",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -133,7 +135,8 @@
       <workItem from="1653308368487" duration="624000" />
       <workItem from="1653386339882" duration="1639000" />
       <workItem from="1653634981536" duration="643000" />
-      <workItem from="1654005681813" duration="8374000" />
+      <workItem from="1654005681813" duration="8432000" />
+      <workItem from="1654058269252" duration="20032000" />
     </task>
     <task id="LOCAL-00001" summary="check cuda and cudnn version">
       <created>1646034019501</created>
@@ -317,7 +320,14 @@
       <option name="project" value="LOCAL" />
       <updated>1652515412991</updated>
     </task>
-    <option name="localTasksCounter" value="27" />
+    <task id="LOCAL-00027" summary="wandb log images">
+      <created>1654014182132</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1654014182132</updated>
+    </task>
+    <option name="localTasksCounter" value="28" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -335,7 +345,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="check cuda and cudnn version" />
     <MESSAGE value="update .gitignore" />
     <MESSAGE value="add thickness and seed for args." />
     <MESSAGE value="add deployment config" />
@@ -360,6 +369,7 @@
     <MESSAGE value="complete GradCam and SimCam" />
     <MESSAGE value="bug fix" />
     <MESSAGE value="bug fix: inplace operation" />
-    <option name="LAST_COMMIT_MESSAGE" value="bug fix: inplace operation" />
+    <MESSAGE value="wandb log images" />
+    <option name="LAST_COMMIT_MESSAGE" value="wandb log images" />
   </component>
 </project>

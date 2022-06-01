@@ -30,6 +30,7 @@ loader_kwargs:
   persistent_workers: true
 
 train_configs:
+  project_name: my
   dataset_dir: /home/wangyh/01-Projects/03-my/Datasets/polygons_unfilled_64_3
   resume: false
   resume_path: null
@@ -59,6 +60,6 @@ distributed_configs:
   port: 4250
 
 log_configs:
-  log_dir: test_runs
+  log_dir: test_logs
   save_epoch_interval: 5
   snapshot_interval: 100

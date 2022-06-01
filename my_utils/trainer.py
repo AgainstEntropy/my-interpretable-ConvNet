@@ -28,7 +28,7 @@ from torchvision import transforms as T
 from my_utils import data
 from my_utils.models import create_model
 from my_utils.utils import AverageMeter, correct_rate, Hook, get_conv_weights
-from my_utils.vis import vis_4D
+from my_utils.vis import vis_4D, sim_matrix
 
 cudnn.benchmark = True
 
@@ -85,13 +85,8 @@ class Trainer(object):
         self.dist_cfgs['device'] = self.device
 
         save_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
-        run_dir = os.path.join(os.getcwd(),
-                               f"{self.log_cfgs['log_dir']}/"
-                               f"{self.model_cfgs['type']}/"
-                               f"KS_{self.model_cfgs['kernel_size']}_"
-                               f"ACT_{self.model_cfgs['act']}_"
-                               f"Norm_{self.model_cfgs['norm']}")
-        self.log_dir = os.path.join(run_dir, save_time)
+        log_root = os.path.join(os.getcwd(), self.log_cfgs['log_dir'])
+        self.log_dir = os.path.join(log_root, save_time)
         self.ckpt_dir = os.path.join(self.log_dir, 'checkpoints')
         os.makedirs(self.ckpt_dir, exist_ok=True)
         if self.dist_cfgs['local_rank'] == 0:
@@ -129,8 +124,9 @@ class Trainer(object):
             self.load_checkpoint(checkpoint_path)
 
         if self.dist_cfgs['local_rank'] == 0:
-            self._init_wandb(project_name='my', run_name=save_time)
+            self._init_wandb(project_name=self.train_cfgs['project_name'], run_name=save_time)
             self.vis_loader, _ = self._load_dataset(phase='vis')
+            self._init_video_recorder()
 
         if self.dist_cfgs['local_rank'] == 0:
             print(f"{time.time() - tic} sec are used to initialize a Trainer.")
@@ -158,6 +154,13 @@ class Trainer(object):
         config_table.add_column('Val', list(wandb_config.values()))
 
         logger.info('\n' + config_table.get_string())
+
+    def _init_video_recorder(self):
+        conv_num = len(get_conv_weights(self.model))
+        self.kernel_videos = {}
+        for idx in range(conv_num):
+            self.kernel_videos[f'kernel{idx}'] = []
+            self.kernel_videos[f'kernel_sim{idx}'] = []
 
     def _build_model(self):
         self.model = create_model(**self.model_cfgs)
@@ -259,7 +262,7 @@ class Trainer(object):
                     'Metric/loss/val': val_loss
                 })
 
-                self.log_images()
+                self.record_conv_kernels(log_mode=('video', 'image'))
 
             self.scheduler.step()
 
@@ -268,11 +271,12 @@ class Trainer(object):
                 checkpoint_path = os.path.join(self.ckpt_dir, f"epoch_{(epoch + 1)}.pth")
                 self.save_checkpoint(checkpoint_path)
 
+        if self.dist_cfgs['local_rank'] == 0:
+            self.log_kernel_videos()
+            wandb.finish()
+
         if self.dist_cfgs['distributed']:
             distributed.destroy_process_group()
-
-        if self.dist_cfgs['local_rank'] == 0:
-            wandb.finish()
 
     def train(self, epoch):
         self.model.train()
@@ -444,12 +448,28 @@ class Trainer(object):
 
         return loss_recorder.avg, acc_recorder.avg
 
-    def log_images(self):
+    def record_conv_kernels(self, log_mode: tuple = ('video',)):
+        title = f'epoch {self.epoch}'
         conv_weights = get_conv_weights(self.model)
         for idx, weight in enumerate(conv_weights):
-            fig_array = vis_4D(data=weight, figsize_factor=3,
-                               cmap='viridis', return_fig_array=True)
-            wandb.log({'kernels': wandb.Image(fig_array, caption=f"idx:{idx}  epoch:{self.epoch}")})
+            fig = vis_4D(data=weight, figsize_factor=1,
+                         cmap='viridis', return_mode='fig_array')
+            sim = sim_matrix(weight.transpose(1, 0, 2, 3), title=title,  return_mode='fig_array')
+            if 'image' in log_mode:
+                logger.info('Logging images')
+                wandb.log({f'kernel:{idx}': wandb.Image(fig, caption=f"epoch:{self.epoch}")})
+                wandb.log({f'kernel_sim:{idx}': wandb.Image(sim, caption=f"epoch:{self.epoch}")})
+            if 'video' in log_mode:
+                self.kernel_videos[f'kernel{idx}'].append(fig)
+                self.kernel_videos[f'kernel_sim{idx}'].append(sim)
+
+    def log_kernel_videos(self):
+        if not hasattr(self, 'kernel_videos'):
+            return 0
+        logger.info('Logging kernel videos')
+        for k, v in self.kernel_videos.items():
+            video = np.stack(arrays=v, axis=0).transpose((0, 3, 1, 2))  # (T, 4, H, W)
+            wandb.log({v: wandb.Video(video, fps=15, caption=f'kernel:{k}', format='mp4')})
 
     def save_checkpoint(self, path):
         # self.optimizer.consolidate_state_dict()

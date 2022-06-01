@@ -7,8 +7,8 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 
+
 # from timm.models.layers import trunc_normal_, DropPath
-from my_utils.utils import GAP
 
 
 def create_model(type='simple_conv', kernel_size=3,
@@ -20,6 +20,117 @@ def create_model(type='simple_conv', kernel_size=3,
         model_class = my_ConvNeXt
     return model_class(kernel_size=kernel_size, depths=depths, dims=dims,
                        act=act, norm=norm, use_GSP=use_GSP)
+
+
+class simple_Conv(nn.Module):
+    r"""
+    Args:
+        in_chans (int): Number of input image channels. Default: 1
+        num_classes (int): Number of classes for classification head. Default: 4
+        depths (tuple(int)): Number of blocks at each stage. Default: (1, 1, 1)
+        dims (tuple(int)): Feature dimension at each stage. Default: (4, 8, 16)
+    """
+
+    def __init__(self, in_chans=1, num_classes=4, kernel_size=7,
+                 depths=(1, 1, 1), dims=(2, 4, 8),
+                 act='relu', norm='BN', use_GSP=False):
+        super().__init__()
+
+        assert len(depths) == len(dims)
+        self.num_stages = len(dims)
+        if act == 'relu':
+            self.act_layer = nn.ReLU()
+        elif act == 'gelu':
+            self.act_layer = nn.GELU()
+
+        self.stages = nn.ModuleList()
+        start_layer = self.conv_block(in_chans, dims[0], kernel_size, norm)
+        self.stages.append(start_layer)
+
+        for i in range(self.num_stages):
+            if depths[i] - 1 > 0:
+                self.stages.append(nn.Sequential(
+                    *[self.conv_block(dims[i], dims[i], kernel_size, norm) for _ in range(depths[i] - 1)]
+                ))
+            if i < self.num_stages - 1:
+                self.stages.append(self.conv_block(dims[i], dims[i + 1], kernel_size, norm))
+
+        self.use_GSP = use_GSP
+        self.GAP = GAP()
+        self.head = nn.Linear(dims[-1], num_classes)
+
+        self.loss_func = nn.CrossEntropyLoss()
+
+        self.apply(self._init_weights)
+
+    def _init_weights(self, m):
+        if isinstance(m, (nn.Conv2d, nn.Linear)):
+            # trunc_normal_(m.weight, std=.02)
+            nn.init.kaiming_normal_(m.weight)
+            if m.bias is not None:
+                nn.init.constant_(m.bias, 0)
+
+    def conv_block(self, in_chans, out_chans, kernel_size=7, norm='BN'):
+        r"""
+        Args:
+            in_chans (int): Number of input image channels.
+            out_chans (int): Number of output image channels.
+            kernel_size (int): Kernel size of Conv layer. Default: 3
+            act (str): Activation function. Select from 'relu' or 'gelu'. Default: None
+        """
+        block = nn.Sequential(nn.Conv2d(in_chans, out_chans, kernel_size, padding='same', bias=False))
+        if norm == 'BN':
+            block.add_module(f'BN-{out_chans}', nn.BatchNorm2d(out_chans))
+        elif norm == 'LN':
+            block.add_module(f'LN-{out_chans}', LayerNorm(out_chans))
+
+        return block
+
+    def forward(self, xx):
+        inputs, labels = xx
+        x = inputs.clone()
+        for stage in self.stages:
+            x = stage(x)  # (N, C[i], H, W) -> (N, C[i+1], H, W)
+            x = self.act_layer(x)
+        if self.use_GSP:
+            x = x * inputs
+        x = self.GAP(x)  # global average pooling, (N, C, H, W) -> (N, C)
+        scores = self.head(x)  # (N, C) -> (N, cls_num)
+
+        loss = self.loss_func(scores, labels)
+        preds = scores.argmax(axis=1)
+
+        return loss, preds
+
+
+class cam_simple_Conv(simple_Conv):
+    def __init__(self, in_chans=1, num_classes=4, kernel_size=7,
+                 depths=(1, 1, 1), dims=(2, 4, 8),
+                 act='relu', norm='BN', use_GSP=False):
+        super().__init__(in_chans=in_chans, num_classes=num_classes, kernel_size=kernel_size,
+                         depths=depths, dims=dims,
+                         act=act, norm=norm, use_GSP=use_GSP)
+
+    def forward(self, inputs):
+        x = inputs.clone()
+        for stage in self.stages:
+            x = stage(x)  # (N, C[i], H, W) -> (N, C[i+1], H, W)
+            x = self.act_layer(x)
+        if self.use_GSP:
+            x = x * inputs
+        x = self.GAP(x)  # global average pooling, (N, C, H, W) -> (N, C)
+        scores = self.head(x)  # (N, C) -> (N, cls_num)
+
+        return scores
+
+
+class GAP(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.avg_pool = nn.AdaptiveAvgPool2d(output_size=(1, 1))
+
+    def forward(self, x):
+        return self.avg_pool(x).squeeze()  # (N, C, H, W) -> (N, C)
 
 
 class Block(nn.Module):
@@ -162,108 +273,6 @@ class my_ConvNeXt(nn.Module):
         x = self.forward_features(x)
         x = self.head(x)
         return x
-
-
-class simple_Conv(nn.Module):
-    r"""
-    Args:
-        in_chans (int): Number of input image channels. Default: 1
-        num_classes (int): Number of classes for classification head. Default: 4
-        depths (tuple(int)): Number of blocks at each stage. Default: (1, 1, 1)
-        dims (tuple(int)): Feature dimension at each stage. Default: (4, 8, 16)
-    """
-
-    def __init__(self, in_chans=1, num_classes=4, kernel_size=7,
-                 depths=(1, 1, 1), dims=(2, 4, 8),
-                 act='relu', norm='BN', use_GSP=False):
-        super().__init__()
-
-        assert len(depths) == len(dims)
-        self.num_stages = len(dims)
-        if act == 'relu':
-            self.act_layer = nn.ReLU()
-        elif act == 'gelu':
-            self.act_layer = nn.GELU()
-
-        self.stages = nn.ModuleList()
-        start_layer = self.conv_block(in_chans, dims[0], kernel_size, norm)
-        self.stages.append(start_layer)
-
-        for i in range(self.num_stages):
-            if depths[i] - 1 > 0:
-                self.stages.append(nn.Sequential(
-                    *[self.conv_block(dims[i], dims[i], kernel_size, norm) for _ in range(depths[i] - 1)]
-                ))
-            if i < self.num_stages - 1:
-                self.stages.append(self.conv_block(dims[i], dims[i + 1], kernel_size, norm))
-
-        self.use_GSP = use_GSP
-        self.GAP = GAP()
-        self.head = nn.Linear(dims[-1], num_classes)
-
-        self.loss_func = nn.CrossEntropyLoss()
-
-        self.apply(self._init_weights)
-
-    def _init_weights(self, m):
-        if isinstance(m, (nn.Conv2d, nn.Linear)):
-            # trunc_normal_(m.weight, std=.02)
-            nn.init.kaiming_normal_(m.weight)
-            if m.bias is not None:
-                nn.init.constant_(m.bias, 0)
-
-    def conv_block(self, in_chans, out_chans, kernel_size=7, norm='BN'):
-        r"""
-        Args:
-            in_chans (int): Number of input image channels.
-            out_chans (int): Number of output image channels.
-            kernel_size (int): Kernel size of Conv layer. Default: 3
-            act (str): Activation function. Select from 'relu' or 'gelu'. Default: None
-        """
-        block = nn.Sequential(nn.Conv2d(in_chans, out_chans, kernel_size, padding='same', bias=False))
-        if norm == 'BN':
-            block.add_module(f'BN-{out_chans}', nn.BatchNorm2d(out_chans))
-        elif norm == 'LN':
-            block.add_module(f'LN-{out_chans}', LayerNorm(out_chans))
-
-        return block
-
-    def forward(self, xx):
-        inputs, labels = xx
-        x = inputs.clone()
-        for stage in self.stages:
-            x = stage(x)  # (N, C[i], H, W) -> (N, C[i+1], H, W)
-            x = self.act_layer(x)
-        if self.use_GSP:
-            x = x * inputs
-        x = self.GAP(x)  # global average pooling, (N, C, H, W) -> (N, C)
-        scores = self.head(x)  # (N, C) -> (N, cls_num)
-
-        loss = self.loss_func(scores, labels)
-        preds = scores.argmax(axis=1)
-
-        return loss, preds
-
-
-class cam_simple_Conv(simple_Conv):
-    def __init__(self, in_chans=1, num_classes=4, kernel_size=7,
-                 depths=(1, 1, 1), dims=(2, 4, 8),
-                 act='relu', norm='BN', use_GSP=False):
-        super().__init__(in_chans=in_chans, num_classes=num_classes, kernel_size=kernel_size,
-                 depths=depths, dims=dims,
-                 act=act, norm=norm, use_GSP=use_GSP)
-
-    def forward(self, inputs):
-        x = inputs.clone()
-        for stage in self.stages:
-            x = stage(x)  # (N, C[i], H, W) -> (N, C[i+1], H, W)
-            x = self.act_layer(x)
-        if self.use_GSP:
-            x = x * inputs
-        x = self.GAP(x)  # global average pooling, (N, C, H, W) -> (N, C)
-        scores = self.head(x)  # (N, C) -> (N, cls_num)
-
-        return scores
 
 
 class LayerNorm(nn.Module):
