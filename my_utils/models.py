@@ -12,14 +12,14 @@ import torch.nn.functional as F
 
 
 def create_model(type='simple_conv', kernel_size=3,
-                 depths=(1, 1, 1), dims=(2, 4, 8), act='relu', norm='BN', use_GSP=False):
+                 depths=(1, 1, 1), dims=(2, 4, 8), act='relu', norm='BN', pooling_method=False):
     model_class = None
     if type == "simple_conv":
         model_class = simple_Conv
     elif type == "my_convnext":
         model_class = my_ConvNeXt
     return model_class(kernel_size=kernel_size, depths=depths, dims=dims,
-                       act=act, norm=norm, use_GSP=use_GSP)
+                       act=act, norm=norm, pooling_method=pooling_method)
 
 
 class simple_Conv(nn.Module):
@@ -33,15 +33,16 @@ class simple_Conv(nn.Module):
 
     def __init__(self, in_chans=1, num_classes=4, kernel_size=7,
                  depths=(1, 1, 1), dims=(2, 4, 8),
-                 act='relu', norm='BN', use_GSP=False):
+                 act='relu', norm='BN', pooling_method='GAP'):
         super().__init__()
 
         assert len(depths) == len(dims)
         self.num_stages = len(dims)
-        if act == 'relu':
-            self.act_layer = nn.ReLU()
-        elif act == 'gelu':
-            self.act_layer = nn.GELU()
+
+        act_dict = {'relu': nn.ReLU,
+                    'gelu': nn.GELU,
+                    'prelu': nn.PReLU}
+        self.act_layer = act_dict[act]()
 
         self.stages = nn.ModuleList()
         start_layer = self.conv_block(in_chans, dims[0], kernel_size, norm)
@@ -55,7 +56,7 @@ class simple_Conv(nn.Module):
             if i < self.num_stages - 1:
                 self.stages.append(self.conv_block(dims[i], dims[i + 1], kernel_size, norm))
 
-        self.use_GSP = use_GSP
+        self.pooling_method = pooling_method
         self.GAP = GAP()
         self.head = nn.Linear(dims[-1], num_classes)
 
@@ -70,7 +71,7 @@ class simple_Conv(nn.Module):
             if m.bias is not None:
                 nn.init.constant_(m.bias, 0)
 
-    def conv_block(self, in_chans, out_chans, kernel_size=7, norm='BN'):
+    def conv_block(self, in_chans, out_chans, kernel_size, norm):
         r"""
         Args:
             in_chans (int): Number of input image channels.
@@ -92,7 +93,7 @@ class simple_Conv(nn.Module):
         for stage in self.stages:
             x = stage(x)  # (N, C[i], H, W) -> (N, C[i+1], H, W)
             x = self.act_layer(x)
-        if self.use_GSP:
+        if self.pooling_method == 'GMP':
             x = x * inputs
         x = self.GAP(x)  # global average pooling, (N, C, H, W) -> (N, C)
         scores = self.head(x)  # (N, C) -> (N, cls_num)
@@ -106,17 +107,17 @@ class simple_Conv(nn.Module):
 class cam_simple_Conv(simple_Conv):
     def __init__(self, in_chans=1, num_classes=4, kernel_size=7,
                  depths=(1, 1, 1), dims=(2, 4, 8),
-                 act='relu', norm='BN', use_GSP=False):
+                 act='relu', norm='BN', pooling_method='GAP'):
         super().__init__(in_chans=in_chans, num_classes=num_classes, kernel_size=kernel_size,
                          depths=depths, dims=dims,
-                         act=act, norm=norm, use_GSP=use_GSP)
+                         act=act, norm=norm, pooling_method=pooling_method)
 
     def forward(self, inputs):
         x = inputs.clone()
         for stage in self.stages:
             x = stage(x)  # (N, C[i], H, W) -> (N, C[i+1], H, W)
             x = self.act_layer(x)
-        if self.use_GSP:
+        if self.pooling_method == 'GMP':
             x = x * inputs
         x = self.GAP(x)  # global average pooling, (N, C, H, W) -> (N, C)
         scores = self.head(x)  # (N, C) -> (N, cls_num)
@@ -131,6 +132,34 @@ class GAP(nn.Module):
 
     def forward(self, x):
         return self.avg_pool(x).squeeze()  # (N, C, H, W) -> (N, C)
+
+
+class LayerNorm(nn.Module):
+    r""" LayerNorm that supports two data formats: channels_last (default) or channels_first.
+    The ordering of the dimensions in the inputs. channels_last corresponds to inputs with
+    shape (batch_size, height, width, channels) while channels_first corresponds to inputs
+    with shape (batch_size, channels, height, width).
+    """
+
+    def __init__(self, normalized_shape, eps=1e-6, data_format="channels_first"):
+        super().__init__()
+        if data_format not in ["channels_last", "channels_first"]:
+            raise NotImplementedError
+        self.data_format = data_format
+        self.weight = nn.Parameter(torch.ones(normalized_shape))
+        self.bias = nn.Parameter(torch.zeros(normalized_shape))
+        self.eps = eps
+        self.normalized_shape = (normalized_shape,)
+
+    def forward(self, x):
+        if self.data_format == "channels_last":
+            return F.layer_norm(x, self.normalized_shape, self.weight, self.bias, self.eps)
+        elif self.data_format == "channels_first":
+            u = x.mean(1, keepdim=True)
+            s = (x - u).pow(2).mean(1, keepdim=True)
+            x = (x - u) / torch.sqrt(s + self.eps)
+            x = self.weight[:, None, None] * x + self.bias[:, None, None]
+            return x
 
 
 class Block(nn.Module):
@@ -181,7 +210,7 @@ class my_ConvNeXt(nn.Module):
     """
 
     def __init__(self, in_chans=1, num_classes=4, kernel_size=3,
-                 depths=(1, 1, 1), dims=(4, 8, 16), act='relu', norm='BN', use_GSP=False,
+                 depths=(1, 1, 1), dims=(4, 8, 16), act='relu', norm='BN', pooling_method=False,
                  drop_path_rate=0., layer_scale_init_value=1e-2, head_init_scale=1.):
         super().__init__()
 
@@ -274,30 +303,3 @@ class my_ConvNeXt(nn.Module):
         x = self.head(x)
         return x
 
-
-class LayerNorm(nn.Module):
-    r""" LayerNorm that supports two data formats: channels_last (default) or channels_first.
-    The ordering of the dimensions in the inputs. channels_last corresponds to inputs with
-    shape (batch_size, height, width, channels) while channels_first corresponds to inputs
-    with shape (batch_size, channels, height, width).
-    """
-
-    def __init__(self, normalized_shape, eps=1e-6, data_format="channels_first"):
-        super().__init__()
-        self.weight = nn.Parameter(torch.ones(normalized_shape))
-        self.bias = nn.Parameter(torch.zeros(normalized_shape))
-        self.eps = eps
-        self.data_format = data_format
-        if self.data_format not in ["channels_last", "channels_first"]:
-            raise NotImplementedError
-        self.normalized_shape = (normalized_shape,)
-
-    def forward(self, x):
-        if self.data_format == "channels_last":
-            return F.layer_norm(x, self.normalized_shape, self.weight, self.bias, self.eps)
-        elif self.data_format == "channels_first":
-            u = x.mean(1, keepdim=True)
-            s = (x - u).pow(2).mean(1, keepdim=True)
-            x = (x - u) / torch.sqrt(s + self.eps)
-            x = self.weight[:, None, None] * x + self.bias[:, None, None]
-            return x

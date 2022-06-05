@@ -27,7 +27,7 @@ from torchvision import transforms as T
 
 from my_utils import data
 from my_utils.models import create_model
-from my_utils.utils import AverageMeter, correct_rate, Hook, get_conv_weights
+from my_utils.utils import AverageMeter, correct_rate, Hook, get_conv_weights, get_feature_maps
 from my_utils.vis import vis_4D, sim_matrix
 
 cudnn.benchmark = True
@@ -138,10 +138,10 @@ class Trainer(object):
             "dims": self.model_cfgs['dims'],
             "activation": self.model_cfgs['act'],
             "normalization": self.model_cfgs['norm'],
-            "use_GSP": self.model_cfgs['use_GSP'],
+            "pooling_method": self.model_cfgs['pooling_method'],
             "batch_size": self.train_cfgs['batch_size'],
-            "lr_backbone": self.optim_kwargs['lr'],
             "optimizer": self.optim_kwargs['optimizer'],
+            "lr_backbone": self.optim_kwargs['lr'],
             "weight_decay": self.optim_kwargs['weight_decay'],
             "epochs": self.schedule_cfgs['max_epoch'],
         }
@@ -157,10 +157,11 @@ class Trainer(object):
 
     def _init_video_recorder(self):
         conv_num = len(get_conv_weights(self.model))
-        self.kernel_videos = {}
+        self.videos = {}
+        self.log_content = ['conv_kernel', 'conv_kernel_sim', 'feature_map']
         for idx in range(conv_num):
-            self.kernel_videos[f'kernel{idx}'] = []
-            self.kernel_videos[f'kernel_sim{idx}'] = []
+            for content in self.log_content:
+                self.videos[f'{content}{idx}'] = []
 
     def _build_model(self):
         self.model = create_model(**self.model_cfgs)
@@ -179,12 +180,14 @@ class Trainer(object):
             transform=trans
         )
 
-        sampler = DistributedSampler(dataset, shuffle=True) \
-            if self.dist_cfgs['distributed'] else None
+        if not self.dist_cfgs['distributed'] or phase == 'vis':
+            sampler = None
+        else:
+            sampler = DistributedSampler(dataset, shuffle=True)
         data_loader = DataLoader(dataset,
-                                 sampler=None if phase == 'vis' else sampler,
+                                 sampler=sampler,
                                  worker_init_fn=seed_worker,
-                                 shuffle=(sampler is None or phase == 'vis'),
+                                 shuffle=(sampler is None and phase != 'vis'),
                                  drop_last=(phase == 'train'),
                                  **self.loader_kwargs)
 
@@ -249,7 +252,7 @@ class Trainer(object):
                     self.writer.add_scalar(tag=f'optimizer/lr_group_{i}',
                                            scalar_value=param_group['lr'],
                                            global_step=epoch)
-                    wandb.log({f"optimizer/lr_group_{i}": param_group['lr']})
+                    wandb.log({f"optimizer/lr_group_{i}": param_group['lr']}, step=epoch+1)
 
                 self.writer.add_scalars('Metric/acc', {'train': train_acc, 'val': val_acc}, epoch + 1)
                 self.writer.add_scalars('Metric/loss', {'train': train_loss, 'val': val_loss}, epoch + 1)
@@ -260,9 +263,11 @@ class Trainer(object):
                     'Metric/acc/best_acc': self.val_metrics['best_acc'],
                     'Metric/loss/train': train_loss,
                     'Metric/loss/val': val_loss
-                })
+                }, step=epoch+1)
 
-                self.record_conv_kernels(log_mode=('video', 'image'))
+                logger.info('Logging images')
+                for content in tqdm(self.log_content):
+                    self.record_data(content=content, log_mode=('video', ))  # 'video', 'image'
 
             self.scheduler.step()
 
@@ -272,7 +277,7 @@ class Trainer(object):
                 self.save_checkpoint(checkpoint_path)
 
         if self.dist_cfgs['local_rank'] == 0:
-            self.log_kernel_videos()
+            self.log_videos()
             wandb.finish()
 
         if self.dist_cfgs['distributed']:
@@ -374,12 +379,12 @@ class Trainer(object):
             except Exception as e:
                 logger.critical(e)
                 continue
-            if not self.dist_cfgs['distributed'] and self.dist_cfgs['local_rank'] == 0 \
-                    and epoch % 10 == 0 and step == len_loader - 1:
-                inputs_collector = inputs.clone()
-                labels_collector = labels.clone()
-                GAP_hook = Hook()
-                hook_handle = self.model.GAP.register_forward_hook(GAP_hook)
+            # if not self.dist_cfgs['distributed'] and self.dist_cfgs['local_rank'] == 0 \
+            #         and epoch % 10 == 0 and step == len_loader - 1:
+            #     inputs_collector = inputs.clone()
+            #     labels_collector = labels.clone()
+            #     GAP_hook = Hook()
+            #     hook_handle = self.model.GAP.register_forward_hook(GAP_hook)
 
             inputs = inputs.to(self.device)
             labels = labels.to(self.device)
@@ -411,16 +416,16 @@ class Trainer(object):
                 pbar.update()
 
         if self.dist_cfgs['local_rank'] == 0:
-            if not self.dist_cfgs['distributed'] and epoch % 10 == 0:
-                embed_features = torch.cat(GAP_hook.out_features, dim=0)
-                self.writer.add_embedding(mat=embed_features,
-                                          metadata=labels_collector,
-                                          label_img=inputs_collector,
-                                          global_step=epoch,
-                                          tag='gap_embed')
-
-                hook_handle.remove()
-                del GAP_hook
+            # if not self.dist_cfgs['distributed'] and epoch % 10 == 0:
+            #     embed_features = torch.cat(GAP_hook.out_features, dim=0)
+            #     self.writer.add_embedding(mat=embed_features,
+            #                               metadata=labels_collector,
+            #                               label_img=inputs_collector,
+            #                               global_step=epoch,
+            #                               tag='gap_embed')
+            #
+            #     hook_handle.remove()
+            #     del GAP_hook
             pbar.close()
 
             logger.info(
@@ -448,28 +453,36 @@ class Trainer(object):
 
         return loss_recorder.avg, acc_recorder.avg
 
-    def record_conv_kernels(self, log_mode: tuple = ('video',)):
+    def record_data(self,
+                    content: str,
+                    log_mode: tuple = ('video',)):
         title = f'epoch {self.epoch}'
-        conv_weights = get_conv_weights(self.model)
-        for idx, weight in enumerate(conv_weights):
-            fig = vis_4D(data=weight, figsize_factor=1,
-                         cmap='viridis', return_mode='fig_array')
-            sim = sim_matrix(weight.transpose(1, 0, 2, 3), title=title,  return_mode='fig_array')
-            if 'image' in log_mode:
-                logger.info('Logging images')
-                wandb.log({f'kernel:{idx}': wandb.Image(fig, caption=f"epoch:{self.epoch}")})
-                wandb.log({f'kernel_sim:{idx}': wandb.Image(sim, caption=f"epoch:{self.epoch}")})
-            if 'video' in log_mode:
-                self.kernel_videos[f'kernel{idx}'].append(fig)
-                self.kernel_videos[f'kernel_sim{idx}'].append(sim)
+        if content in ['conv_kernel', 'conv_kernel_sim']:
+            log_data = get_conv_weights(self.model)
+        elif content == 'feature_map':
+            imgs, labels = next(iter(self.vis_loader))
+            imgs = imgs.to(self.device)
+            labels = labels.to(self.device)
+            log_data = get_feature_maps(self.model, (imgs, labels))
 
-    def log_kernel_videos(self):
-        if not hasattr(self, 'kernel_videos'):
+        for idx, d in enumerate(log_data):
+            if content == 'conv_kernel_sim':
+                fig = sim_matrix(d, title=title, return_mode='fig_array')
+            else:
+                fig = vis_4D(data=d.transpose(1, 0, 2, 3),
+                             title=title, cmap='viridis', return_mode='fig_array')
+            if 'image' in log_mode:
+                wandb.log({f'{content}:{idx}': wandb.Image(fig, caption=title)}, step=self.epoch+1)
+            if 'video' in log_mode:
+                self.videos[f'{content}{idx}'].append(fig)
+
+    def log_videos(self):
+        if not hasattr(self, 'videos'):
             return 0
-        logger.info('Logging kernel videos')
-        for k, v in self.kernel_videos.items():
+        logger.info('Logging videos')
+        for k, v in self.videos.items():
             video = np.stack(arrays=v, axis=0).transpose((0, 3, 1, 2))  # (T, 4, H, W)
-            wandb.log({v: wandb.Video(video, fps=15, caption=f'kernel:{k}', format='mp4')})
+            wandb.log({k: wandb.Video(video, fps=15, caption=k, format='mp4')})
 
     def save_checkpoint(self, path):
         # self.optimizer.consolidate_state_dict()

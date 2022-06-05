@@ -24,8 +24,8 @@ def main(cfg):
     dist_cfgs['world_size'] = world_size
     loader_cfgs['batch_size'] = train_cfgs['batch_size'] // world_size
 
+    print(f"Using devices: {dist_cfgs['device_ids']}")
     if dist_cfgs['distributed']:
-        print(f"Using devices: {dist_cfgs['device_ids']}")
         mp.spawn(worker, nprocs=world_size, args=(cfg,))
     else:
         worker(0, cfg)
@@ -43,19 +43,23 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="training a classifier convnet")
     parser.add_argument('-cfg', '--config', type=str, default='configs/default.yaml')
     parser.add_argument('-ks', '--kernel_size', type=int, default=7)
-    parser.add_argument('-act', '--activation', type=str, choices=['relu', 'gelu'], default='relu')
+    parser.add_argument('-act', '--activation', type=str, choices=['relu', 'gelu', 'prelu'], default='relu')
     parser.add_argument('-norm', '--normalization', type=str, choices=['BN', 'LN'], default='BN')
-    parser.add_argument('-gsp', '--use_GSP', type=bool, default=False)
+    parser.add_argument('-pm', '--pooling_method', type=str, choices=['GAP', 'GMP'], default='GAP')
 
     parser.add_argument('-b', '--batch_size', type=int, default=256)
     parser.add_argument('-r', '--resume', action='store_true', help='load previously saved checkpoint')
-    parser.add_argument('-pjn', '--pj_name', type=str, default='my')
+    parser.add_argument('-pjn', '--pj_name', type=str, default='test_logs')
+    parser.add_argument('--seed', type=int, default=1026)
 
     parser.add_argument('-op', '--optimizer', type=str, choices=['SGD', 'Adam', 'AdamW'], default='AdamW')
     parser.add_argument('-lr_b', '--lr_backbone', type=float, default=2.5e-4)
     parser.add_argument('-wd', '--weight_decay', type=float, default=5.0e-3)
 
-    parser.add_argument('-log', '--log_dir', type=str, default='test_runs', help='where to log train results')
+    parser.add_argument('-T', '--cos_T', type=int, default=35)
+    parser.add_argument('--cos_iters', type=int, default=1)
+
+    parser.add_argument('-log', '--log_dir', type=str, default='test_logs', help='where to log train results')
     parser.add_argument('-g', '--gpu_ids', type=lambda x: x.replace(" ", ""), default='0,1', help='available gpu ids')
     parser.add_argument('--port', type=str, default='4250', help='port number of distributed init')
     args = parser.parse_args()
@@ -66,15 +70,19 @@ if __name__ == '__main__':
     config['model_configs']['kernel_size'] = args.kernel_size
     config['model_configs']['act'] = args.activation
     config['model_configs']['norm'] = args.normalization
-    config['model_configs']['use_GSP'] = args.use_GSP
+    config['model_configs']['pooling_method'] = args.pooling_method
 
     config['train_configs']['batch_size'] = args.batch_size
     config['train_configs']['resume'] = args.resume
     config['train_configs']['project_name'] = args.pj_name
+    config['train_configs']['seed'] = args.seed
 
     config['optim_kwargs']['optimizer'] = args.optimizer
     config['optim_kwargs']['lr'] = args.lr_backbone
     config['optim_kwargs']['weight_decay'] = args.weight_decay
+
+    config['schedule_configs']['cos_T'] = args.cos_T
+    config['schedule_configs']['cos_iters'] = args.cos_iters
 
     config['distributed_configs']['device_ids'] = args.gpu_ids
     config['distributed_configs']['port'] = args.port

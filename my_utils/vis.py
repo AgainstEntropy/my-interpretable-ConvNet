@@ -178,20 +178,24 @@ def Vis_pca(dim=2,
     plt.show()
 
 
-def vis_4D(data, title: str, figsize_factor=2, cmap='viridis', return_mode=None):
+def vis_4D(data, title: str, figsize_factor=1, cmap='viridis', return_mode=None):
     """
     Visualize a 4D tensor with shape (N, C, H, W) using N rows and C columns.
     """
     assert len(data.shape) == 4
     row_num, col_num = data.shape[:2]
-    fig = plt.figure(figsize=(col_num * figsize_factor, row_num * figsize_factor))
-    # TODO:
-    fig.suptitle(title, fontsize=16)
-    plt.subplots_adjust(left=0, bottom=0, right=1, top=1, hspace=0.1, wspace=0.1)
-    for idx, filer in enumerate(data.reshape((-1, *data.shape[2:]))):
-        plt.subplot(row_num, col_num, idx + 1)
-        plt.axis('off')
-        plt.imshow(filer, cmap=cmap)
+    fig, axes = plt.subplots(row_num, col_num,
+                             figsize=(col_num * figsize_factor, row_num * figsize_factor),
+                             constrained_layout=True)
+    fig.patch.set_facecolor('none')
+    fig.suptitle(title)
+    # plt.subplots_adjust(left=0, right=1, bottom=0, top=0.9, hspace=0.1, wspace=0.1)
+    if row_num == 1:
+        axes = np.array([axes])
+    for row in range(row_num):
+        for col in range(col_num):
+            axes[row, col].imshow(data[row, col], cmap=cmap)
+            axes[row, col].set_axis_off()
 
     if return_mode is None:
         plt.show()
@@ -212,12 +216,12 @@ def sim_matrix(data: np.ndarray, title: str,
         for w in range(size):
             matrix[h, w] = np.sum(data[h] * data[w])
 
-    fig = plt.figure()
+    fig = plt.figure(facecolor='none')
+    fig.suptitle(title)
     ax = fig.add_subplot(111)
+    ax.set_axis_off()
     im = ax.imshow(matrix, cmap=cmap)
     plt.colorbar(im)
-    plt.axis('off')
-    plt.title(title)
 
     if return_mode is None:
         plt.show()

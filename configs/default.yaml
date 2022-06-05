@@ -11,7 +11,7 @@ model_configs:
     - 8
   act: relu
   norm: BN
-  use_GSP: false
+  pooling_method: GAP
 
 dataset_configs:
   # polygons_unfilled_64_3
@@ -23,7 +23,7 @@ dataset_configs:
 loader_kwargs:
 #  batch_size: 512
 #  shuffle: true
-  num_workers: 8
+  num_workers: 4
   pin_memory: true
 #  drop_last: true
   prefetch_factor: 8
@@ -48,7 +48,7 @@ optim_kwargs:
 schedule_configs:
   schedule_type: cosine_warm
   max_epoch: 90
-  cos_T: 25
+  cos_T: 15
   cos_mul: 2
   cos_iters: 2
 
@@ -60,6 +60,6 @@ distributed_configs:
   port: 4250
 
 log_configs:
-  log_dir: test_logs
+  log_dir: final_1
   save_epoch_interval: 5
   snapshot_interval: 100

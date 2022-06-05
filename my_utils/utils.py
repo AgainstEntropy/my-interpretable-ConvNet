@@ -4,13 +4,15 @@
 # @File    : functions.py
 import os
 import time
+from typing import Union, Optional
 
 import numpy as np
 import torch
 import yaml
+from matplotlib import pyplot as plt
 from torch import nn
 
-from my_utils.models import create_model
+from my_utils.models import create_model, simple_Conv
 
 
 class Hook(object):
@@ -146,18 +148,6 @@ def nested_children(m: torch.nn.Module):
     return output
 
 
-def get_conv_weights(model: torch.nn.Module):
-    kernels = []
-    children = dict(model.named_children())
-    if children == {}:
-        if isinstance(model, nn.Conv2d):
-            return [model.weight.detach().cpu().numpy().transpose((1, 0, 2, 3))]
-    else:
-        for name, child in children.items():
-            kernels.extend(get_conv_weights(child))
-    return kernels
-
-
 def load_model(run_name: str,
                log_root: str = '/home/wangyh/01-Projects/03-my/test_logs',
                ckpt_name: str = 'best') -> torch.nn.Module:
@@ -169,6 +159,7 @@ def load_model(run_name: str,
         ckpt_name (str): 'best' or 'epoch_n', where 'n' is a multiple of 5.
 
     """
+    print('Loading model parameters ...')
     run_dir = os.path.join(log_root, run_name)
     with open(os.path.join(run_dir, 'configs.yaml'), 'r') as stream:
         run_config = yaml.load(stream, Loader=yaml.FullLoader)
@@ -196,4 +187,39 @@ def fig2array(fig):
 
     image_array = Image.frombytes("RGBA", (w, h), buf.tostring())
     image_array = np.asarray(image_array)
+    plt.close(fig)
     return image_array
+
+
+def get_conv_weights(model: torch.nn.Module):
+    kernels = []
+    children = dict(model.named_children())
+    if children == {}:
+        if isinstance(model, nn.Conv2d):
+            return [model.weight.detach().cpu().numpy()]
+    else:
+        for name, child in children.items():
+            kernels.extend(get_conv_weights(child))
+    return kernels
+
+
+def get_feature_maps(model,
+                     inputs: tuple[torch.Tensor, torch.Tensor]):
+    from torch.nn.parallel import DistributedDataParallel as DDP
+    from torch.cuda.amp import autocast
+
+    act_hook = Hook()
+    model.eval()
+    if type(model) == DDP:
+        act_layer = model.module.act_layer
+    else:
+        act_layer = model.act_layer
+    handle = act_layer.register_forward_hook(act_hook)
+
+    with torch.no_grad():
+        with autocast():
+            model(inputs)
+    feature_map = [fmap.detach().cpu().numpy() for fmap in act_hook.out_features]
+    handle.remove()
+    return feature_map
+

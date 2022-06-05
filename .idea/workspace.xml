@@ -5,14 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="580800dd-0704-442b-84fc-70e4e6e2cdce" name="Changes" comment="wandb log images">
+      <change afterPath="$PROJECT_DIR$/configs/wandb sweep config (6_5).yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/deployment.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/deployment.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/SimCam/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/SimCam/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/SimCam/sim_cam.py" beforeDir="false" afterPath="$PROJECT_DIR$/SimCam/sim_cam.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/configs/default.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/default.yaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/my_utils/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_utils/models.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/my_utils/trainer.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_utils/trainer.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/my_utils/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_utils/utils.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/my_utils/vis.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_utils/vis.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/recorder.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/recorder.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/test.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/train.py" beforeDir="false" afterPath="$PROJECT_DIR$/train.py" afterDir="false" />
     </list>
@@ -58,7 +59,7 @@
     "WebServerToolWindowPanel.toolwindow.show.permissions": "false",
     "WebServerToolWindowPanel.toolwindow.show.size": "false",
     "credentialsType com.jetbrains.python.remote.PyCreateRemoteInterpreterDialog$PyCreateRemoteSdkForm": "Web Deployment",
-    "last_opened_file_path": "D:/Files/Fudan/毕设/记录/output.png",
+    "last_opened_file_path": "D:/Files/Fudan/毕设/my_codes/configs",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -66,6 +67,11 @@
     "settings.editor.selected.configurable": "org.jetbrains.plugins.notebooks.jupyter.connections.configuration.JupyterServerConfigurable"
   }
 }]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\Files\Fudan\毕设\my_codes\configs" />
+    </key>
+  </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="SvnConfiguration">
     <configuration>C:\Users\AgainstEntropy\AppData\Roaming\Subversion</configuration>
@@ -137,6 +143,9 @@
       <workItem from="1653634981536" duration="643000" />
       <workItem from="1654005681813" duration="8432000" />
       <workItem from="1654058269252" duration="20032000" />
+      <workItem from="1654143107759" duration="1306000" />
+      <workItem from="1654172948448" duration="19848000" />
+      <workItem from="1654321588073" duration="18694000" />
     </task>
     <task id="LOCAL-00001" summary="check cuda and cudnn version">
       <created>1646034019501</created>
