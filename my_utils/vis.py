@@ -7,6 +7,7 @@ import os.path
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib import colors
 from sklearn.decomposition import PCA
 
 import torch
@@ -178,24 +179,102 @@ def Vis_pca(dim=2,
     plt.show()
 
 
-def vis_4D(data, title: str, figsize_factor=1, cmap='viridis', return_mode=None):
+def vis_4D(data, title: str, figsize_factor=1, tune_factor=0, fontsize=16, cmap='viridis', return_mode=None):
     """
     Visualize a 4D tensor with shape (N, C, H, W) using N rows and C columns.
     """
     assert len(data.shape) == 4
     row_num, col_num = data.shape[:2]
     fig, axes = plt.subplots(row_num, col_num,
-                             figsize=(col_num * figsize_factor, row_num * figsize_factor),
+                             figsize=(col_num * figsize_factor + tune_factor, row_num * figsize_factor),
                              constrained_layout=True)
     fig.patch.set_facecolor('none')
-    fig.suptitle(title)
+    fig.suptitle(title, fontsize=fontsize)
     # plt.subplots_adjust(left=0, right=1, bottom=0, top=0.9, hspace=0.1, wspace=0.1)
     if row_num == 1:
         axes = np.array([axes])
+    images = []
     for row in range(row_num):
         for col in range(col_num):
-            axes[row, col].imshow(data[row, col], cmap=cmap)
+            images.append(axes[row, col].imshow(data[row, col], cmap=cmap))
             axes[row, col].set_axis_off()
+
+    # vmin = min(image.get_array().min() for image in images)
+    # vmax = max(image.get_array().max() for image in images)
+    # norm = colors.Normalize(vmin=vmin, vmax=vmax)
+    # for im in images:
+    #     im.set_norm(norm)
+    # fig.colorbar(images[0], ax=axes, orientation='vertical')
+
+    if return_mode is None:
+        plt.show()
+    elif return_mode == 'plt_fig':
+        return fig
+    elif return_mode == 'fig_array':
+        return fig2array(fig)
+
+
+def vis_4D_plot(data, title: str = None, norm=True, figsize_factor=1, tune_factor=0, fontsize=16, cmap='viridis',
+                return_mode=None):
+    """
+    Visualize a 4D tensor with shape (N, C, H, W) using N rows and C columns.
+    """
+    assert len(data.shape) == 4
+    row_num, col_num = data.shape[:2]
+    fig, axes = plt.subplots(row_num, col_num,
+                             figsize=(col_num * figsize_factor + tune_factor, row_num * figsize_factor),
+                             constrained_layout=True)
+    fig.patch.set_facecolor('none')
+    if title is not None:
+        fig.suptitle(title, fontsize=fontsize)
+    # plt.subplots_adjust(left=0, right=1, bottom=0, top=0.9, hspace=0.1, wspace=0.1)
+    if row_num == 1:
+        axes = np.array([axes])
+    if col_num == 1:
+        axes = np.array([np.array([ax]) for ax in axes])
+    images = []
+    for row in range(row_num):
+        for col in range(col_num):
+            images.append(axes[row, col].imshow(data[row, col], cmap=cmap))
+            axes[row, col].set_axis_off()
+
+    if norm:
+        vmin = min(image.get_array().min() for image in images)
+        vmax = max(image.get_array().max() for image in images)
+        norm = colors.Normalize(vmin=vmin, vmax=vmax)
+        for im in images:
+            im.set_norm(norm)
+        # fig.colorbar(images[0], ax=axes, orientation='vertical')
+
+    if return_mode is None:
+        plt.show()
+    elif return_mode == 'plt_fig':
+        return fig
+    elif return_mode == 'fig_array':
+        return fig2array(fig)
+
+
+def vis_head(model: torch.nn.Module, title: str = None, return_mode=None):
+    weight = model.head.weight.detach().cpu().numpy()
+    bias = model.head.bias.detach().cpu().numpy()[:, None]
+
+    fig, axes = plt.subplots(1, 2, constrained_layout=True, figsize=(9, 5),
+                             gridspec_kw={
+                                 'width_ratios': [weight.shape[1], bias.shape[1]]})
+    if title is not None:
+        fig.suptitle(title)
+    images = []
+    images.append(axes[0].imshow(weight, cmap='viridis'))
+    images.append(axes[1].imshow(bias, cmap='viridis'))
+    axes[0].set_axis_off()
+    axes[1].set_axis_off()
+
+    vmin = min(image.get_array().min() for image in images)
+    vmax = max(image.get_array().max() for image in images)
+    norm = colors.Normalize(vmin=vmin, vmax=vmax)
+    for im in images:
+        im.set_norm(norm)
+    fig.colorbar(images[0], ax=axes, orientation='horizontal')
 
     if return_mode is None:
         plt.show()

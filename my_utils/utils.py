@@ -11,6 +11,9 @@ import torch
 import yaml
 from matplotlib import pyplot as plt
 from torch import nn
+from torch.nn.parallel import DistributedDataParallel as DDP
+from torch.cuda.amp import autocast
+from tqdm import tqdm
 
 from my_utils.models import create_model, simple_Conv
 
@@ -205,9 +208,6 @@ def get_conv_weights(model: torch.nn.Module):
 
 def get_feature_maps(model,
                      inputs: tuple[torch.Tensor, torch.Tensor]):
-    from torch.nn.parallel import DistributedDataParallel as DDP
-    from torch.cuda.amp import autocast
-
     act_hook = Hook()
     model.eval()
     if type(model) == DDP:
@@ -223,3 +223,26 @@ def get_feature_maps(model,
     handle.remove()
     return feature_map
 
+
+def get_avg_embeds(model, loader):
+    device = get_device(model)
+
+    embed_hook = Hook()
+    model.eval()
+    GAP_layer = model.GAP
+    handle = GAP_layer.register_forward_hook(embed_hook)
+
+    len_loader = len(loader)
+    iter_loader = iter(loader)
+    for _ in tqdm(range(len_loader)):
+        images, lables = next(iter_loader)
+        images = images.to(device)
+        lables = lables.to(device)
+
+        with torch.no_grad():
+            with autocast():
+                model((images, lables))
+    embeds = [embed.detach().cpu().numpy().mean(0) for embed in embed_hook.out_features]
+    handle.remove()
+
+    return np.stack(embeds)

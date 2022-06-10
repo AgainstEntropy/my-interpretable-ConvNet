@@ -30,7 +30,7 @@ loader_kwargs:
   persistent_workers: true
 
 train_configs:
-  project_name: my
+  project_name: my_final
   dataset_dir: /home/wangyh/01-Projects/03-my/Datasets/polygons_unfilled_64_3
   resume: false
   resume_path: null

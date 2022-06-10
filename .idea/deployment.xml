@@ -39,6 +39,7 @@
             <excludedPath path="/01-Projects/03-my/finalruns" />
             <excludedPath path="/01-Projects/03-my/test_runs" />
             <excludedPath path="/01-Projects/03-my/test_logs" />
+            <excludedPath path="/01-Projects/03-my/my_final_1" />
           </excludedPaths>
         </serverdata>
       </paths>

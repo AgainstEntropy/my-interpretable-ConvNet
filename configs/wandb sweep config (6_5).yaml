@@ -1,0 +1,60 @@
+#python train.py --cos_T 15 --cos_iters=2 --gpu_ids=3,4 -b 128 -lr_b 1.5e-4 -wd 5e-3 -ks 9 -norm LN -act gelu -pm GMP --port 4250
+name: final_1
+method: grid
+command:
+  - python
+  - ${program}
+  - "--gpu_ids=3,4"
+  - ${args}
+program: train.py
+parameters:
+  kernel_size:
+    distribution: categorical
+    values:
+      - 5
+      - 7
+      - 9
+
+  normalization:
+    distribution: categorical
+    values:
+      - BN
+      - LN
+
+  activation:
+    distribution: categorical
+    values:
+      - relu
+      - prelu
+      - gelu
+
+  pooling_method:
+    distribution: categorical
+    values:
+      - GAP
+      - GMP
+
+  lr_backbone:
+    distribution: categorical
+    values:
+      - 1e-4
+      - 1.5e-4
+      - 2e-4
+
+  weight_decay:
+    distribution: categorical
+    values:
+      - 5e-3
+      - 2e-2
+
+  batch_size:
+    distribution: categorical
+    values:
+      - 128
+      - 256
+
+  optimizer:
+    distribution: categorical
+    values:
+      - Adam
+      - AdamW

@@ -56,10 +56,10 @@ if __name__ == '__main__':
     parser.add_argument('-lr_b', '--lr_backbone', type=float, default=2.5e-4)
     parser.add_argument('-wd', '--weight_decay', type=float, default=5.0e-3)
 
-    parser.add_argument('-T', '--cos_T', type=int, default=35)
-    parser.add_argument('--cos_iters', type=int, default=1)
+    parser.add_argument('-T', '--cos_T', type=int, default=15)
+    parser.add_argument('--cos_iters', type=int, default=2)
 
-    parser.add_argument('-log', '--log_dir', type=str, default='test_logs', help='where to log train results')
+    parser.add_argument('-log', '--log_dir', type=str, default='my_final_1', help='where to log train results')
     parser.add_argument('-g', '--gpu_ids', type=lambda x: x.replace(" ", ""), default='0,1', help='available gpu ids')
     parser.add_argument('--port', type=str, default='4250', help='port number of distributed init')
     args = parser.parse_args()
