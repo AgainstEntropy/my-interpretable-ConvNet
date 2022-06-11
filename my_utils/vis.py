@@ -244,7 +244,7 @@ def vis_4D_plot(data, title: str = None, norm=True, figsize_factor=1, tune_facto
         norm = colors.Normalize(vmin=vmin, vmax=vmax)
         for im in images:
             im.set_norm(norm)
-        # fig.colorbar(images[0], ax=axes, orientation='vertical')
+        fig.colorbar(images[0], ax=axes, orientation='vertical')
 
     if return_mode is None:
         plt.show()

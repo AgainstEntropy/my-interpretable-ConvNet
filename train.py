@@ -46,6 +46,7 @@ if __name__ == '__main__':
     parser.add_argument('-act', '--activation', type=str, choices=['relu', 'gelu', 'prelu'], default='relu')
     parser.add_argument('-norm', '--normalization', type=str, choices=['BN', 'LN'], default='BN')
     parser.add_argument('-pm', '--pooling_method', type=str, choices=['GAP', 'GMP'], default='GAP')
+    parser.add_argument('-res', '--use_residual', type=bool, default=False)
 
     parser.add_argument('-b', '--batch_size', type=int, default=256)
     parser.add_argument('-r', '--resume', action='store_true', help='load previously saved checkpoint')
@@ -71,6 +72,7 @@ if __name__ == '__main__':
     config['model_configs']['act'] = args.activation
     config['model_configs']['norm'] = args.normalization
     config['model_configs']['pooling_method'] = args.pooling_method
+    config['model_configs']['use_residual'] = args.use_residual
 
     config['train_configs']['batch_size'] = args.batch_size
     config['train_configs']['resume'] = args.resume

@@ -12,14 +12,14 @@ import torch.nn.functional as F
 
 
 def create_model(type='simple_conv', kernel_size=3,
-                 depths=(1, 1, 1), dims=(2, 4, 8), act='relu', norm='BN', pooling_method=False):
+                 depths=(1, 1, 1), dims=(2, 4, 8), act='relu', norm='BN', pooling_method='GAP', use_residual=False):
     model_class = None
     if type == "simple_conv":
         model_class = simple_Conv
     elif type == "my_convnext":
         model_class = my_ConvNeXt
     return model_class(kernel_size=kernel_size, depths=depths, dims=dims,
-                       act=act, norm=norm, pooling_method=pooling_method)
+                       act=act, norm=norm, pooling_method=pooling_method, use_residual=use_residual)
 
 
 class simple_Conv(nn.Module):
@@ -33,11 +33,12 @@ class simple_Conv(nn.Module):
 
     def __init__(self, in_chans=1, num_classes=4, kernel_size=7,
                  depths=(1, 1, 1), dims=(2, 4, 8),
-                 act='relu', norm='BN', pooling_method='GAP'):
+                 act='relu', norm='BN', pooling_method='GAP', use_residual=False):
         super().__init__()
 
         assert len(depths) == len(dims)
         self.num_stages = len(dims)
+        self.use_residual = use_residual
 
         act_dict = {'relu': nn.ReLU,
                     'gelu': nn.GELU,
@@ -45,8 +46,7 @@ class simple_Conv(nn.Module):
         self.act_layer = act_dict[act]()
 
         self.stages = nn.ModuleList()
-        start_layer = self.conv_block(in_chans, dims[0], kernel_size, norm)
-        self.stages.append(start_layer)
+        self.stages.append(self.conv_block(in_chans, dims[0], kernel_size, norm))
 
         for i in range(self.num_stages):
             if depths[i] - 1 > 0:
@@ -83,7 +83,7 @@ class simple_Conv(nn.Module):
         if norm == 'BN':
             block.add_module(f'BN-{out_chans}', nn.BatchNorm2d(out_chans))
         elif norm == 'LN':
-            block.add_module(f'LN-{out_chans}', LayerNorm(out_chans))
+            block.add_module(f'LN-{out_chans}', my_LayerNorm(out_chans))
 
         return block
 
@@ -91,8 +91,13 @@ class simple_Conv(nn.Module):
         inputs, labels = xx
         x = inputs.clone()
         for stage in self.stages:
+            if self.use_residual:
+                stage_in = x.clone()
             x = stage(x)  # (N, C[i], H, W) -> (N, C[i+1], H, W)
             x = self.act_layer(x)
+            if self.use_residual and stage_in.shape == x.shape:
+                x = x + stage_in
+
         if self.pooling_method == 'GMP':
             x = x * inputs
         x = self.GAP(x)  # global average pooling, (N, C, H, W) -> (N, C)
@@ -146,7 +151,7 @@ class LayerNorm(nn.Module):
         if data_format not in ["channels_last", "channels_first"]:
             raise NotImplementedError
         self.data_format = data_format
-        self.weight = nn.Parameter(torch.ones(normalized_shape))
+        self.weight = nn.Parameter(torch.ones(normalized_shape))  # (C, )
         self.bias = nn.Parameter(torch.zeros(normalized_shape))
         self.eps = eps
         self.normalized_shape = (normalized_shape,)
@@ -160,6 +165,22 @@ class LayerNorm(nn.Module):
             x = (x - u) / torch.sqrt(s + self.eps)
             x = self.weight[:, None, None] * x + self.bias[:, None, None]
             return x
+
+
+class my_LayerNorm(nn.Module):
+    def __init__(self, normalized_shape, eps=1e-6):
+        super().__init__()
+
+        self.weight = nn.Parameter(torch.ones(normalized_shape))  # (C, )
+        self.bias = nn.Parameter(torch.zeros(normalized_shape))
+        self.eps = eps
+
+    def forward(self, x):
+        u = x.mean(dim=(1, 2, 3), keepdim=True)  # (N, C, H, W) -> (N, 1, 1, 1)
+        s = (x - u).pow(2).mean(dim=(1, 2, 3), keepdim=True)  # (N, 1, 1, 1)
+        x = (x - u) / torch.sqrt(s + self.eps)  # (N, C, H, W)
+        x = self.weight[:, None, None] * x + self.bias[:, None, None]
+        return x
 
 
 class Block(nn.Module):
@@ -302,4 +323,3 @@ class my_ConvNeXt(nn.Module):
         x = self.forward_features(x)
         x = self.head(x)
         return x
-

@@ -34,14 +34,12 @@ def points(n, width=64, float_rate=(0.05, 0.05)):
     return r, np.array(point_list, dtype=int)
 
 
-def get_mPoints_and_eLength(point_list):
+def get_mid_points(point_list):
     mPoints = np.zeros_like(point_list)
-    eLengths = np.zeros(point_list.shape[0])
     for i, p in enumerate(point_list):
         mPoints[i] = (point_list[i - 1] + p) / 2
-        eLengths[i] = np.linalg.norm(point_list[i - 1] - p)
 
-    return mPoints, eLengths
+    return mPoints
 
 
 def draw_polygon(point_list, fill=False, width=32, thickness=1):
@@ -54,18 +52,17 @@ def draw_polygon(point_list, fill=False, width=32, thickness=1):
     return img
 
 
-def draw_mask(img, fill, maskType, maskRate, r, point_list):
+def draw_mask(img, fill, maskType, maskRate, width, point_list):
     if maskType == 'edge':
         if fill:
             pass
         else:
-            mPoints, eLengths = get_mPoints_and_eLength(point_list)
-            for p, mask_l in zip(mPoints, np.round(eLengths * maskRate).astype(int)):
-                cv2.circle(img, p, mask_l, color=0, thickness=-1)
+            mask_points = get_mid_points(point_list)
     elif maskType == 'vertex':
-        mask_l = round(r * maskRate)
-        for p in point_list:
-            cv2.circle(img, p, mask_l, color=0, thickness=-1)
+        mask_points = point_list
+    mask_l = round(width * maskRate)
+    for p in mask_points:
+        cv2.circle(img, p, mask_l, color=0, thickness=-1)
 
 
 parser = argparse.ArgumentParser(description='Generate some polygons.')
@@ -121,6 +118,6 @@ if __name__ == '__main__':
             r, point_list = points(angNum, width, float_rate=float_rate)
             img = draw_polygon(point_list, fill, width, thickness)
             if maskType != 'None':
-                draw_mask(img, fill, maskType, maskRate, r, point_list)
+                draw_mask(img, fill, maskType, maskRate, width, point_list)
             img_address = os.path.join(Path, f"{angNum}_{j}.png")
             cv2.imwrite(img_address, img)

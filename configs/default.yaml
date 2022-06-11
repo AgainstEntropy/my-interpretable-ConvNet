@@ -12,6 +12,7 @@ model_configs:
   act: relu
   norm: BN
   pooling_method: GAP
+  use_residual: False
 
 dataset_configs:
   # polygons_unfilled_64_3

@@ -95,12 +95,14 @@ def check_accuracy(test_model, loader, training=False, cls_num=4):
     confusion_matrix = np.zeros((cls_num,) * 2)
     device = get_device(test_model)
     test_model.eval()  # set model to evaluation mode
+    iter_loader = iter(loader)
     tic = time.time()
     with torch.no_grad():
-        for batch_idx, (X, Y) in enumerate(loader):
-            X = X.to(device, dtype=torch.float32)  # move to device, e.g. GPU
-            Y = Y.to(device, dtype=torch.int)
-            _, preds = test_model((X, Y))
+        for X, Y in iter_loader:
+            X = X.to(device)  # move to device, e.g. GPU
+            Y = Y.to(device)
+            with autocast():
+                _, preds = test_model((X, Y))
             for label, pred in zip(Y, preds):
                 confusion_matrix[label, pred] += 1
     num_correct = confusion_matrix.trace()
