@@ -108,7 +108,7 @@ if __name__ == '__main__':
     if fill:
         ROOT = f'Datasets/polygons_filled_{width}_{thickness}_{maskType}_{maskRate}/'
     else:
-        ROOT = f'Datasets/polygons_unfilled_{width}_{thickness}_{maskType}_{maskRate}/'
+        ROOT = f'Datasets/polygons_unfilled_{width}_{thickness}_{maskType}_{maskRate}_{float_rate[0]}_{float_rate[1]}/'
     ROOT += dataset
     for angNum in tqdm(angNums):
         Path = os.path.join(ROOT, f'{angNum}')

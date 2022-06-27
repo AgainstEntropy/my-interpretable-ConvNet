@@ -4,20 +4,22 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="580800dd-0704-442b-84fc-70e4e6e2cdce" name="Changes" comment="add some vis methods">
-      <change afterPath="$PROJECT_DIR$/configs/wandb sweep config (6_11).yaml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/configs/wandb sweep config (new_LN).yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/deployment.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/deployment.xml" afterDir="false" />
+    <list default="true" id="580800dd-0704-442b-84fc-70e4e6e2cdce" name="Changes" comment="find a bug in LayerNorm">
+      <change afterPath="$PROJECT_DIR$/SimMask/utils.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Generate_polygon.py" beforeDir="false" afterPath="$PROJECT_DIR$/Generate_polygon.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Generate_polygon.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Generate_polygon.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/configs/default.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/default.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/my_utils/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_utils/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SimCam/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/SimMask/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SimCam/functional.py" beforeDir="false" afterPath="$PROJECT_DIR$/SimMask/functional.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SimCam/grad_cam.py" beforeDir="false" afterPath="$PROJECT_DIR$/SimMask/grad_cam.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SimCam/sim_cam.py" beforeDir="false" afterPath="$PROJECT_DIR$/SimMask/sim_cam.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SimCam/vis.py" beforeDir="false" afterPath="$PROJECT_DIR$/SimMask/vis.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/my_utils/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_utils/utils.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/my_utils/vis.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_utils/vis.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/plot.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/plot.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/test.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/train.py" beforeDir="false" afterPath="$PROJECT_DIR$/train.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/polygen_classify_cam.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/polygen_classify_cam.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/polygon_classify_train.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/polygon_classify_train.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/polygon_classify_vis.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/polygon_classify_vis.ipynb" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -52,23 +54,23 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "WebServerToolWindowFactoryState": "true",
-    "WebServerToolWindowPanel.toolwindow.highlight.mappings": "true",
-    "WebServerToolWindowPanel.toolwindow.highlight.symlinks": "true",
-    "WebServerToolWindowPanel.toolwindow.show.date": "false",
-    "WebServerToolWindowPanel.toolwindow.show.permissions": "false",
-    "WebServerToolWindowPanel.toolwindow.show.size": "false",
-    "credentialsType com.jetbrains.python.remote.PyCreateRemoteInterpreterDialog$PyCreateRemoteSdkForm": "Web Deployment",
-    "last_opened_file_path": "D:/Files/Fudan/毕设/my_codes/configs",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "settings.editor.selected.configurable": "org.jetbrains.plugins.notebooks.jupyter.connections.configuration.JupyterServerConfigurable"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowPanel.toolwindow.highlight.mappings&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowPanel.toolwindow.highlight.symlinks&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowPanel.toolwindow.show.date&quot;: &quot;false&quot;,
+    &quot;WebServerToolWindowPanel.toolwindow.show.permissions&quot;: &quot;false&quot;,
+    &quot;WebServerToolWindowPanel.toolwindow.show.size&quot;: &quot;false&quot;,
+    &quot;credentialsType com.jetbrains.python.remote.PyCreateRemoteInterpreterDialog$PyCreateRemoteSdkForm&quot;: &quot;Web Deployment&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/Files/Fudan/毕设/my_codes/configs&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;org.jetbrains.plugins.notebooks.jupyter.connections.configuration.JupyterServerConfigurable&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="D:\Files\Fudan\毕设\my_codes\configs" />
@@ -155,7 +157,10 @@
       <workItem from="1654669304114" duration="8041000" />
       <workItem from="1654744047245" duration="6509000" />
       <workItem from="1654837593098" duration="18298000" />
-      <workItem from="1654916686938" duration="17147000" />
+      <workItem from="1654916686938" duration="23189000" />
+      <workItem from="1655208286368" duration="19501000" />
+      <workItem from="1655633722653" duration="1363000" />
+      <workItem from="1655692517501" duration="6812000" />
     </task>
     <task id="LOCAL-00001" summary="check cuda and cudnn version">
       <created>1646034019501</created>
@@ -360,7 +365,14 @@
       <option name="project" value="LOCAL" />
       <updated>1654871334765</updated>
     </task>
-    <option name="localTasksCounter" value="30" />
+    <task id="LOCAL-00030" summary="find a bug in LayerNorm">
+      <created>1654950422827</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1654950422827</updated>
+    </task>
+    <option name="localTasksCounter" value="31" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -378,7 +390,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="add deployment config" />
     <MESSAGE value="some test for dataset normalization." />
     <MESSAGE value="add a function to train a model from zero" />
     <MESSAGE value="grid search" />
@@ -403,6 +414,7 @@
     <MESSAGE value="wandb log images" />
     <MESSAGE value="bug fix: get feature map with no_grad" />
     <MESSAGE value="add some vis methods" />
-    <option name="LAST_COMMIT_MESSAGE" value="add some vis methods" />
+    <MESSAGE value="find a bug in LayerNorm" />
+    <option name="LAST_COMMIT_MESSAGE" value="find a bug in LayerNorm" />
   </component>
 </project>

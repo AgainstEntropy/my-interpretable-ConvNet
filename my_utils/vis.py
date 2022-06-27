@@ -131,8 +131,10 @@ def Vis_cam(loader, model, target_layers, img_num=8, mode="heatmap_only"):
             plt.axis("off")
 
 
-def Vis_mean(dataset_dir='/home/wangyh/01-Projects/03-my/Datasets/polygons_unfilled_32_2',
-             dataset_type="train"):
+def Vis_mean(dataset_name='polygons_unfilled_64_3',
+             dataset_type="val",
+             return_mode=None):
+    dataset_dir = os.path.join('/home/wangyh/01-Projects/03-my/Datasets', dataset_name)
     dataset = data.MyDataset(os.path.join(dataset_dir, dataset_type),
                              transform=transforms.ToTensor())
     loader = DataLoader(dataset, batch_size=len(dataset))
@@ -144,14 +146,20 @@ def Vis_mean(dataset_dir='/home/wangyh/01-Projects/03-my/Datasets/polygons_unfil
     for i in range(4):
         img_mean = gray_imgs[i * num_per_class: (i + 1) * num_per_class].mean(dim=0)
         ax = axs[i].imshow(img_mean, cmap="gray")
-        axs[i].set_title(f'{i}')
-    cb = fig.colorbar(ax, ax=axs, orientation='horizontal', location='bottom')
-    plt.show()
+        axs[i].set_title(f'{i+3}', fontsize=18)
+        axs[i].set_axis_off()
+    # cb = fig.colorbar(ax, ax=axs, orientation='horizontal', location='bottom')
+    if return_mode is None:
+        plt.show()
+    elif return_mode == 'plt_fig':
+        return fig
 
 
 def Vis_pca(dim=2,
-            dataset_dir='/home/wangyh/01-Projects/03-my/Datasets/polygons_unfilled_32_2',
-            dataset_type="train"):
+            dataset_name='polygons_unfilled_64_3',
+            dataset_type="val",
+            return_mode=None):
+    dataset_dir = os.path.join('/home/wangyh/01-Projects/03-my/Datasets', dataset_name)
     dataset = data.MyDataset(os.path.join(dataset_dir, dataset_type),
                              transform=transforms.ToTensor())
     loader = DataLoader(dataset, batch_size=len(dataset))
@@ -163,20 +171,29 @@ def Vis_pca(dim=2,
     color_list = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728',
                   '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
 
-    fig = plt.figure(figsize=(16, 8))
-    ax1 = fig.add_subplot(121, projection='3d') if dim == 3 else fig.add_subplot(121)
     if dim == 2:
-        ax2 = fig.add_subplot(122, projection='3d') if dim == 3 else fig.add_subplot(122)
-    for i in range(4):
-        ax1.scatter(*[x[labels == i, _] for _ in range(dim)], label=f'{i + 3}')
-        if dim == 2:
-            ax2.scatter(*[x[labels == 3 - i, _] for _ in range(dim)], label=f'{6 - i}', c=color_list[3 - i])
-    ax1.legend(title='edges #', loc='best')
-    if dim == 2:
-        handles, labels = ax2.get_legend_handles_labels()
-        ax2.legend(handles[::-1], labels[::-1], title='edges #', loc='best')
-    fig.suptitle(f"PCA(n={dim})")
-    plt.show()
+        fig, axes = plt.subplots(1, 2, figsize=(16, 8), constrained_layout=True)
+        for i in range(4):
+            axes[0].scatter(*[x[labels == i, _] for _ in range(dim)], label=f'{i + 3}')
+            axes[1].scatter(*[x[labels == 3 - i, _] for _ in range(dim)], label=f'{6 - i}', c=color_list[3 - i])
+
+            axes[0].legend(loc='best', fontsize=16)
+
+            handles, labels = axes[1].get_legend_handles_labels()
+            axes[1].legend(handles[::-1], labels[::-1], loc='best', fontsize=16)
+    elif dim == 3:
+        fig = plt.figure(figsize=(16, 8), constrained_layout=True)
+        ax = fig.add_subplot(projection='3d')
+        for i in range(4):
+            ax.scatter(*[x[labels == i, _] for _ in range(dim)], label=f'{i + 3}')
+            ax.legend(loc='best', fontsize=16)
+
+    # fig.suptitle(f"PCA", fontsize=20)
+
+    if return_mode is None:
+        plt.show()
+    elif return_mode == 'plt_fig':
+        return fig
 
 
 def vis_4D(data, title: str, figsize_factor=1, tune_factor=0, fontsize=16, cmap='viridis', return_mode=None):

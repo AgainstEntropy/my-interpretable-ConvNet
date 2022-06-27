@@ -15,7 +15,7 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.cuda.amp import autocast
 from tqdm import tqdm
 
-from my_utils.models import create_model, simple_Conv
+from my_utils.models import create_model, simple_Conv, cam_simple_Conv
 
 
 class Hook(object):
@@ -180,6 +180,35 @@ def load_model(run_name: str,
     return model
 
 
+def load_cam_model(run_name: str,
+                   log_root: str = '/home/wangyh/01-Projects/03-my/test_logs',
+                   ckpt_name: str = 'best') -> torch.nn.Module:
+    """
+
+    Args:
+        run_name (str): distinguish a specific run, use run time for general cases.
+        log_root (str):
+        ckpt_name (str): 'best' or 'epoch_n', where 'n' is a multiple of 5.
+
+    """
+    print('Loading model parameters ...')
+    run_dir = os.path.join(log_root, run_name)
+    with open(os.path.join(run_dir, 'configs.yaml'), 'r') as stream:
+        run_config = yaml.load(stream, Loader=yaml.FullLoader)
+
+    checkpoint = torch.load(os.path.join(run_dir, f'checkpoints/{ckpt_name}.pth'))
+    print('best val acc is:', checkpoint['best_val_acc'].item())
+
+    model_cfgs = run_config['model_configs']
+    model_type = model_cfgs.pop('type')
+    model = cam_simple_Conv(**model_cfgs)
+    new_state_dict = {k.replace('module.', ''): v for k, v in checkpoint['model'].items()}
+    model.load_state_dict(new_state_dict)
+    print('Successfully load model parameters!')
+
+    return model
+
+
 def fig2array(fig):
     from PIL import Image
 
@@ -224,6 +253,31 @@ def get_feature_maps(model,
     feature_map = [fmap.detach().cpu().numpy() for fmap in act_hook.out_features]
     handle.remove()
     return feature_map
+
+
+def get_gradients(model, inputs: torch.Tensor, target_classes: torch.Tensor):
+    grad_hook = Hook(record_in=True, record_out=False)
+    model.eval()
+    if type(model) == DDP:
+        act_layer = model.module.act_layer
+    else:
+        act_layer = model.act_layer
+    handle = act_layer.register_full_backward_hook(grad_hook)
+
+    with autocast():
+        for input_tensor, target_cls in zip(inputs, target_classes):
+            scores = model(input_tensor[None, :])  # (1, 1, H, W) -> (1, C)
+            pred_cls = scores.argmax(dim=-1)
+            if target_cls is None:
+                target_cls = pred_cls  # (1, )
+            else:
+                assert target_cls < len(scores)
+            scores[target_cls].backward()
+
+    gradients = [grad[0].detach().cpu().numpy() for grad in grad_hook.in_features]
+    handle.remove()
+    gradients = [np.vstack(gradients[i::4]) for i in range(4)][::-1]
+    return gradients
 
 
 def get_avg_embeds(model, loader):
